@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraExplore | Country Details</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/country.css">
+</head>
+<body id="countryBody">
+    <header class="navbar">
+        <div class="logo">
+            <a href="index.html"><h1>Terra Explore</h1></a>
+        </div>
+    </header>
+
+    <main class="details-container">
+        <section id="countryInfo" class="country-info-card">
+            <div class="flag-container">
+                <img id="countryFlag" src="" alt="Country Flag" hidden>
+            </div>
+            <div class="info-text">
+                <h2 id="countryName">Loading...</h2>
+                <ul class="fact-list">
+                    <li><strong>Capital:</strong> <span id="capitalText">-</span></li>
+                    <li><strong>Population:</strong> <span id="populationText">-</span></li>
+                    <li><strong>Language(s):</strong> <span id="languageText">-</span></li>
+                    <li><strong>Currency:</strong> <span id="currencyText">-</span></li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="hidden-gems-section">
+            <div class="action-container">
+                <p>Want to see the places tourists usually miss?</p>
+                <button id="discoverGemsBtn" class="primary-btn" disabled>Discover Hidden Gems</button>
+            </div>
+
+            <div id="gemsGrid" class="gems-grid">
+                </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/country.js"></script>
+</body>
+</html>>

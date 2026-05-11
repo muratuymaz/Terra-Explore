@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraExplore | Discover the World</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <h1>Terra Explore</h1>
+        </div>
+    </header>
+
+    <main class="home-container">
+        <section class="search-section">
+            <h2>Find Your Next Destination</h2>
+            <p>Enter a country name to explore its culture, facts, and hidden gems.</p>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="e.g., Japan, Italy, Brazil..." autocomplete="off">
+                <button id="searchBtn" type="button">Explore</button>
+            </div>
+            <p id="errorMessage" class="error-text" hidden></p>
+        </section>
+
+        <section class="map-section">
+            <div id="worldMapContainer">
+                <p class="map-placeholder-text">Interactive world map will be displayed here.</p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/home.js"></script>
+</body>
+</html>
