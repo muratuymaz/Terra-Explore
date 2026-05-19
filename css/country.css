@@ -1,0 +1,99 @@
+#countryBody {
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Details */
+.detail-page {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px; 
+    background-color: rgba(250, 246, 240, 0.95);
+    border-radius: 12px;
+}
+
+/* Flags and country info */
+/* Flexbox container to align the country flag and the textual information side-by-side */
+.country-card {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+    align-items: center;
+}
+
+/* Forces the flag image to take exactly half of the card's width */
+.country-card img {
+    width: 50%;
+    border-radius: 12px;
+}
+
+/* Styling for the unordered list containing Capital, Population... */
+.info-list {
+    list-style: none;
+    margin-top: 20px;
+}
+
+/* Adds breathing room between each list item */
+.info-list li {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+/* Highlights the labels using the primary green color */
+.info-list strong {
+    color: var(--green);
+}
+
+/* Hidden Gems Section */
+/* Container for the "Secret Places" feature */
+.places-area {
+    border-top: 2px solid #ddd;
+    padding-top: 30px;
+}
+
+/* Call-to-action text styling */
+.places-area p {
+    color: var(--brown);
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+/* Flexbox container for the dynamic place cards */
+.cards-box {
+    display: flex;
+    flex-wrap: wrap; /* Allows cards to wrap to the next line if they exceed container width */
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* Styling for each generated location card */
+.place-card {
+    background-color: var(--cream);
+    padding: 20px; 
+    border-radius: 12px;
+    border-left: 5px solid var(--brown);
+    width: 250px;
+}
+
+/* Overrides for screens 768px wide or smaller */
+@media (max-width: 768px) {
+    .detail-page {
+        padding: 15px;
+        margin: 20px 10px;
+    }
+
+    .country-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .country-card img {
+        width: 100%;
+    }
+
+    .place-card {
+        width: 100%;
+    }
+}

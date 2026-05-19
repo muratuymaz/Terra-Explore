@@ -1,41 +1,62 @@
-.home-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
+/* Wraps the entire content of the home page, limits its width, and centers it */
+.home-page {
+    max-width: 1000px;
+    margin: 50px auto;
     text-align: center;
 }
 
-.search-section h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+/* Search */
+/* Styling for the main heading above the search bar */
+.search-area h2 {
+    font-size: 36px;
+    margin-bottom: 10px; /* Adds space between the heading and the descriptive paragraph */
 }
 
+/* Flexbox container for the search input and button to align them perfectly side-by-side */
 .search-box {
-    margin: 2rem auto;
     display: flex;
-    max-width: 600px;
-    gap: 10px;
-}
-
-.search-box input {
-    flex: 1;
-    padding: 1rem;
-    border: 2px solid #ddd;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-}
-
-.map-section {
-    margin-top: 4rem;
-    background: #e9ecef;
-    border-radius: var(--border-radius);
-    min-height: 400px;
-    display: flex;
-    align-items: center;
     justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
 }
 
-.map-placeholder-text {
-    color: #777;
+/* Map */
+/* Container reserved for the future SVG World Map component */
+.map-area {
+    margin-top: 50px;
+    background-color: var(--cream);
+    min-height: 300px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    padding: 50px;
+}
+
+/* Styling for the temporary placeholder text inside the empty map area */
+.map-text {
+    color: var(--brown);
     font-style: italic;
+}
+
+/* Responsive Design (Mobile & Tablets) */
+@media (max-width: 768px) {
+    /* Reduce the main heading size for smaller screens to prevent awkward text wrapping */
+    .search-area h2 {
+        font-size: 28px;
+    }
+
+    /* Stack the search input and button vertically (top-to-bottom) instead of side-by-side */
+    .search-box {
+        flex-direction: column;
+    }
+
+    /* Make both the input field and the button span the full width of their container for easier touch interaction */
+    .search-box input, 
+    .search-box button {
+        width: 100%;
+    }
+
+    /* Reduce the inner padding of the map area to save precious screen space on mobile devices */
+    .map-area {
+        padding: 20px;
+    }
 }

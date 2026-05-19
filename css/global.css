@@ -1,0 +1,170 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+/* Core color palette used across the application */
+:root {
+    --green: #4a7c59;    
+    --cream: #faf6f0;         
+    --brown: #705c30;     
+    --dark-gray: #2e3230;       
+    --white: #ffffff;
+}
+
+/* Resets default browser styling and applies border-box sizing to all elements */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+}
+
+/* Sets the foundation for typography and page background */
+body {
+    font-family: 'Nunito Sans', sans-serif;
+    background-color: var(--cream);
+    color: var(--dark-gray);
+    line-height: 1.6;
+}
+
+/* Applies the specific serif font and primary color to all headings */
+h1, h2, h3 {
+    font-family: 'Literata', serif;
+    color: var(--green);
+}
+
+/* Flexbox container for the main header */
+.menu {
+    background-color: var(--green);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logo text styling inside the menu */
+.menu h1 {
+    color: var(--cream);
+}
+
+/* Removes default underline from all links in the menu */
+.menu a {
+    text-decoration: none;
+}
+
+/* Buttons */
+/* Default solid primary button style */
+.button {
+    background-color: var(--green);
+    color: var(--cream);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Visual state for buttons when they are disabled (e.g., during loading) */
+.button:disabled {
+    background-color: #a3b8aa; /* Light green */
+    cursor: not-allowed;
+}
+
+/* Inputs */
+/* Default styling for text input fields */
+input {
+    background-color: var(--cream);
+    border: 1px solid gray;
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+/* Container for the page links (About Us, Hidden Gems) */
+.menu-links {
+    display: flex;
+    gap: 30px; /* Horizontal spacing between each link */
+    align-items: center;
+}
+
+/* Styling for the individual page links */
+.menu-links a {
+    color: var(--cream);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Adds underline effect when hovering over menu links */
+.menu-links a:hover {
+    text-decoration: underline;
+}
+
+/* Container for the right-side buttons (Search, Sign Up) */
+.menu-actions {
+    display: flex;
+    gap: 15px; /* Horizontal spacing between buttons */
+    align-items: center;
+}
+
+/* Secondary button style */
+.button-light {
+    background-color: var(--cream);
+    color: var(--green);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Transparent button style */
+.button-text {
+    background-color: transparent;
+    color: var(--cream);
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+/* Slightly scales up the element when hovered */
+.button-text:hover {
+    transform: scale(1.1);
+}
+
+/* Rules applied only to screens 768px wide or smaller (Tablets and Phones) */
+@media (max-width: 768px) {
+    .menu {
+        flex-direction: column; /* Stacks the logo, links, and buttons vertically */
+        gap: 20px;
+        text-align: center;
+    }
+    /* Allows links and buttons to wrap to the next line if they don't fit horizontally */
+    .menu-links, .menu-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Styling for the standalone, rounded footer box at the bottom of the page */
+.footer {
+    background-color: var(--green); /* Green box color */
+    color: var(--cream); 
+    padding: 30px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Stacks footer contents vertically */
+    align-items: center;
+    gap: 15px; /* Vertical spacing between footer items */
+
+    /* Footer box */
+    max-width: 1000px;
+    width: calc(100% - 40px);
+    margin: 0 auto 40px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(4, 86, 45, 0.1); /* Box shadow */
+}

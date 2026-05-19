@@ -8,20 +8,32 @@
     <link rel="stylesheet" href="css/country.css">
 </head>
 <body id="countryBody">
-    <header class="navbar">
+    <!-- Country page -->
+    <header class="menu">
         <div class="logo">
             <a href="index.html"><h1>Terra Explore</h1></a>
         </div>
+        
+        <nav class="menu-links">
+            <a href="#">About Us</a>
+            <a href="#">Hidden Gems</a>
+        </nav>
+
+        <div class="menu-actions">
+            <button type="button" class="button-text">Search</button>
+            <button type="button" class="button-light">Sign Up</button>
+        </div>
     </header>
 
-    <main class="details-container">
-        <section id="countryInfo" class="country-info-card">
+    <main class="detail-page">
+        
+        <section id="countryInfo" class="country-card">
             <div class="flag-container">
                 <img id="countryFlag" src="" alt="Country Flag" hidden>
             </div>
             <div class="info-text">
                 <h2 id="countryName">Loading...</h2>
-                <ul class="fact-list">
+                <ul class="info-list">
                     <li><strong>Capital:</strong> <span id="capitalText">-</span></li>
                     <li><strong>Population:</strong> <span id="populationText">-</span></li>
                     <li><strong>Language(s):</strong> <span id="languageText">-</span></li>
@@ -30,17 +42,19 @@
             </div>
         </section>
 
-        <section class="hidden-gems-section">
-            <div class="action-container">
-                <p>Want to see the places tourists usually miss?</p>
-                <button id="discoverGemsBtn" class="primary-btn" disabled>Discover Hidden Gems</button>
-            </div>
+        <section class="places-area">
+            <p>Want to see the places tourists usually miss?</p>
+            <button id="discoverGemsBtn" class="button" disabled>Discover Hidden Gems</button>
 
-            <div id="gemsGrid" class="gems-grid">
+            <div id="gemsGrid" class="cards-box">
                 </div>
         </section>
     </main>
 
     <script type="module" src="js/country.js"></script>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
+    </footer>
 </body>
-</html>>
+</html>
