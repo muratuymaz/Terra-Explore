@@ -1,6 +1,8 @@
 const REST_COUNTRIES_BASE_URL = "https://restcountries.com/v3.1";
 const PIXABAY_BASE_URL = "https://pixabay.com/api/";
 const PIXABAY_API_KEY = "";
+const PIXABAY_CACHE_KEY = "terraExplorePixabayCache";
+const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 /* Sends a fetch request and returns the parsed JSON response */
 async function fetchJson(url, options = {}) {
@@ -11,6 +13,65 @@ async function fetchJson(url, options = {}) {
     }
 
     return response.json();
+}
+
+/* Reads the saved Pixabay cache from localStorage */
+function getPixabayCache() {
+    try {
+        const storedCache = localStorage.getItem(PIXABAY_CACHE_KEY);
+
+        return storedCache ? JSON.parse(storedCache) : {};
+    } catch {
+        return {};
+    }
+}
+
+/* Saves the updated Pixabay cache back to localStorage */
+function savePixabayCache(cache) {
+    try {
+        localStorage.setItem(PIXABAY_CACHE_KEY, JSON.stringify(cache));
+    } catch {
+        /* Ignore storage errors so the app can continue normally */
+    }
+}
+
+/* Creates a stable cache key for country-based image lookups */
+function buildCountryImageCacheKey(countryName) {
+    return countryName.trim().toLowerCase();
+}
+
+/* Returns a cached Pixabay image when it is still fresh enough */
+function getCachedCountryImage(countryName) {
+    const cache = getPixabayCache();
+    const cacheKey = buildCountryImageCacheKey(countryName);
+    const cachedItem = cache[cacheKey];
+
+    if (!cachedItem) {
+        return null;
+    }
+
+    const isExpired = Date.now() - cachedItem.savedAt > ONE_DAY_IN_MS;
+
+    if (isExpired) {
+        delete cache[cacheKey];
+        savePixabayCache(cache);
+        return null;
+    }
+
+    return cachedItem.data;
+}
+
+/* Stores the latest Pixabay result for the selected country */
+function cacheCountryImage(countryName, imageData) {
+    const cache = getPixabayCache();
+    const cacheKey = buildCountryImageCacheKey(countryName);
+
+    cache[cacheKey] = {
+        data: imageData,
+        savedAt: Date.now()
+    };
+
+    savePixabayCache(cache);
 }
 
 /* Converts the REST Countries response into a simpler UI-friendly object */
@@ -58,6 +119,12 @@ export async function fetchCountryBackgroundImage(countryName) {
         return null;
     }
 
+    const cachedImage = getCachedCountryImage(countryName);
+
+    if (cachedImage) {
+        return cachedImage;
+    }
+
     const searchParams = new URLSearchParams({
         key: PIXABAY_API_KEY,
         q: `${countryName} landscape`,
@@ -77,7 +144,7 @@ export async function fetchCountryBackgroundImage(countryName) {
         return null;
     }
 
-    return {
+    const backgroundImage = {
         imageUrl: image.largeImageURL || image.webformatURL || "",
         altText: image.tags || `${countryName} landscape`,
         photographerName: image.user || "",
@@ -85,4 +152,8 @@ export async function fetchCountryBackgroundImage(countryName) {
             ? `https://pixabay.com/users/${image.user}-${image.user_id}/`
             : ""
     };
+
+    cacheCountryImage(countryName, backgroundImage);
+
+    return backgroundImage;
 }
