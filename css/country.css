@@ -18,14 +18,27 @@
 /* Flexbox container to align the country flag and the textual information side-by-side */
 .country-card {
     display: flex;
-    gap: 30px;
+    gap: 48px;
     margin-bottom: 40px;
-    align-items: center;
+    align-items: flex-start;
 }
 
-/* Forces the flag image to take exactly half of the card's width */
+/* Keeps the flag area balanced with the text content */
+.flag-container {
+    flex: 1.1;
+}
+
+/* Gives the country details their own readable column */
+.info-text {
+    flex: 0.9;
+    padding-top: 8px;
+}
+
+/* Lets the flag fill its own column instead of the whole card */
 .country-card img {
-    width: 50%;
+    display: block;
+    width: 100%;
+    max-width: 460px;
     border-radius: 12px;
 }
 
@@ -87,10 +100,12 @@
     .country-card {
         flex-direction: column;
         text-align: center;
+        gap: 24px;
     }
 
     .country-card img {
         width: 100%;
+        max-width: none;
     }
 
     .place-card {
