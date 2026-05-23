@@ -6,6 +6,12 @@
     <title>TerraExplore | Discover the World</title>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/home.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
 </head>
 <body>
     <!-- Main menu page -->
@@ -20,18 +26,12 @@
         </nav>
 
         <div class="menu-actions">
-            <!-- Search button appearance -->
-            <button type="button" class="button-text" aria-label="Search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
             <button type="button" class="button-light">Sign Up</button>
         </div>
     </header>
 
     <main class="home-page">
+        <!-- Search area for direct country lookup -->
         <section class="search-area">
             <h2>Find Your Next Destination</h2>
             <p>Enter a country name to explore its culture, facts, and popular places.</p>
@@ -43,13 +43,28 @@
             <p id="errorMessage" class="error-text" hidden></p>
         </section>
 
+        <!-- Interactive map area for country selection -->
         <section class="map-area">
-            <div id="worldMapContainer">
-                <p class="map-text">Interactive world map will be displayed here.</p>
+            <div class="map-header">
+                <h3>Choose a Country from the Map</h3>
+                <p id="mapFeedback" class="map-feedback">Loading countries...</p>
+            </div>
+            <div id="worldMapContainer" aria-label="Interactive world map"></div>
+            <p class="map-text">Click a marker to open the selected country page.</p>
+            <div class="map-legend">
+                <span class="map-legend-dot"></span>
+                <span>Country marker</span>
             </div>
         </section>
     </main>
 
+    <!-- Leaflet powers the interactive map on the home page -->
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <!-- Home page behavior and map marker interactions -->
     <script type="module" src="js/home.js"></script>
     
     <footer class="footer">

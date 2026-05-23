@@ -125,9 +125,8 @@ async function fetchPopularPlacesNearCity(city) {
         limit: String(cityFetchLimit),
         rate: popularPlacesRate
     });
-    const url = `${API_BASE_URLS.openTripMap}/radius?${searchParams.toString()}`;
 
-    return fetchJson(url);
+    return fetchJson(`${API_BASE_URLS.openTripMap}/radius?${searchParams.toString()}`);
 }
 
 /* Fetches one country by name from REST Countries */
@@ -151,6 +150,19 @@ export async function fetchCountryByName(countryName) {
 
         throw error;
     }
+}
+
+export async function fetchCountriesForMap() {
+    const fields = "name,latlng";
+    const countries = await fetchJson(`${API_BASE_URLS.restCountries}/all?fields=${fields}`);
+
+    return countries
+        .filter((country) => Array.isArray(country.latlng) && country.latlng.length >= 2 && country.name?.common)
+        .map((country) => ({
+            name: country.name.common,
+            lat: country.latlng[0],
+            lng: country.latlng[1]
+        }));
 }
 
 /* Fetches a landscape photo related to the selected country */

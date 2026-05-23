@@ -130,10 +130,10 @@ function showPageError(message) {
     selectedCountry = null;
     isPopularPlacesLoading = false;
     elements.countryName.textContent = message;
-    elements.capitalText.textContent = "-";
-    elements.populationText.textContent = "-";
-    elements.languageText.textContent = "-";
-    elements.currencyText.textContent = "-";
+    elements.capitalText.textContent = "Not available";
+    elements.populationText.textContent = "Not available";
+    elements.languageText.textContent = "Not available";
+    elements.currencyText.textContent = "Not available";
     setPopularPlacesLoadingState(false);
     elements.countryFlag.hidden = true;
     elements.popularPlacesButton?.setAttribute("disabled", "true");
@@ -197,9 +197,7 @@ async function loadCountryPage() {
 
     try {
         const country = await fetchCountryByName(countryName);
-
         renderCountryDetails(country);
-
         const backgroundImage = await fetchCountryBackgroundImage(country.name);
         applyBackgroundImage(backgroundImage);
     } catch (error) {
