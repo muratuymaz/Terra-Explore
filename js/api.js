@@ -1,8 +1,39 @@
-const REST_COUNTRIES_BASE_URL = "https://restcountries.com/v3.1";
-const PIXABAY_BASE_URL = "https://pixabay.com/api/";
-const PIXABAY_API_KEY = "";
-const PIXABAY_CACHE_KEY = "terraExplorePixabayCache";
-const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+import {
+    buildCanonicalText,
+    buildCacheEntryKey,
+    fetchJsonp,
+    getCacheValue,
+    hasSimilarValue,
+    setCacheValue
+} from "./utils.js";
+import {
+    API_BASE_URLS,
+    API_KEYS,
+    CACHE_CONFIG,
+    GEONAMES_CONFIG,
+    POPULAR_PLACES_CONFIG
+} from "./config.js";
+const { pixabay: pixabayCache, geoNames: geoNamesCache } = CACHE_CONFIG;
+const {
+    pixabay: pixabayApiKey,
+    geoNamesUsername,
+    openTripMap: openTripMapApiKey
+} = API_KEYS;
+const {
+    endpoint: geoNamesEndpoint,
+    callbackParam: geoNamesCallbackParam,
+    language: geoNamesLanguage,
+    maxRowsMultiplier: geoNamesMaxRowsMultiplier
+} = GEONAMES_CONFIG;
+const {
+    cityCount,
+    cityRadiusInMeters,
+    cityFetchLimit,
+    cityResultDistribution,
+    excludedKinds,
+    genericNameTokens,
+    rate: popularPlacesRate
+} = POPULAR_PLACES_CONFIG;
 
 /* Sends a fetch request and returns the parsed JSON response */
 async function fetchJson(url, options = {}) {
@@ -15,85 +46,94 @@ async function fetchJson(url, options = {}) {
     return response.json();
 }
 
-/* Reads the saved Pixabay cache from localStorage */
-function getPixabayCache() {
-    try {
-        const storedCache = localStorage.getItem(PIXABAY_CACHE_KEY);
+/* Requests top city data from one GeoNames endpoint */
+async function fetchGeoNamesCities(endpoint, searchParams, callbackSuffix) {
+    const response = await fetchJsonp(
+        `${endpoint}?${searchParams.toString()}`,
+        geoNamesCallbackParam,
+        `terraExploreGeoNamesCallback${Date.now()}${callbackSuffix}`
+    );
 
-        return storedCache ? JSON.parse(storedCache) : {};
-    } catch {
-        return {};
-    }
-}
-
-/* Saves the updated Pixabay cache back to localStorage */
-function savePixabayCache(cache) {
-    try {
-        localStorage.setItem(PIXABAY_CACHE_KEY, JSON.stringify(cache));
-    } catch {
-        /* Ignore storage errors so the app can continue normally */
-    }
-}
-
-/* Creates a stable cache key for country-based image lookups */
-function buildCountryImageCacheKey(countryName) {
-    return countryName.trim().toLowerCase();
-}
-
-/* Returns a cached Pixabay image when it is still fresh enough */
-function getCachedCountryImage(countryName) {
-    const cache = getPixabayCache();
-    const cacheKey = buildCountryImageCacheKey(countryName);
-    const cachedItem = cache[cacheKey];
-
-    if (!cachedItem) {
-        return null;
+    if (response.status) {
+        throw new Error(response.status.message || "GeoNames request failed.");
     }
 
-    const isExpired = Date.now() - cachedItem.savedAt > ONE_DAY_IN_MS;
-
-    if (isExpired) {
-        delete cache[cacheKey];
-        savePixabayCache(cache);
-        return null;
-    }
-
-    return cachedItem.data;
-}
-
-/* Stores the latest Pixabay result for the selected country */
-function cacheCountryImage(countryName, imageData) {
-    const cache = getPixabayCache();
-    const cacheKey = buildCountryImageCacheKey(countryName);
-
-    cache[cacheKey] = {
-        data: imageData,
-        savedAt: Date.now()
-    };
-
-    savePixabayCache(cache);
+    return (response.geonames ?? [])
+        .filter((city) => city.name && Number(city.population) > 0)
+        .sort((firstCity, secondCity) => Number(secondCity.population) - Number(firstCity.population))
+        .slice(0, cityCount)
+        .map((city) => ({
+            name: city.name,
+            population: Number(city.population) || 0,
+            lat: Number(city.lat),
+            lng: Number(city.lng)
+        }));
 }
 
 /* Converts the REST Countries response into a simpler UI-friendly object */
 function mapCountryResponse(country) {
-    const languages = country.languages ? Object.values(country.languages) : [];
-    const currencies = country.currencies ? Object.values(country.currencies) : [];
-
     return {
         name: country.name?.common ?? "Unknown Country",
+        countryCode: country.cca2?.toLowerCase() ?? "",
         flagUrl: country.flags?.svg || country.flags?.png || "",
         capital: country.capital?.[0] ?? "Unknown",
         population: country.population ?? 0,
-        languages,
-        currencies,
-        latlng: Array.isArray(country.latlng) ? country.latlng : []
+        languages: country.languages ? Object.values(country.languages) : [],
+        currencies: country.currencies ? Object.values(country.currencies) : []
     };
+}
+
+/* Fetches the largest cities for the selected country */
+async function fetchTopCitiesByCountry(countryCode) {
+    if (!geoNamesUsername) {
+        throw new Error("GeoNames username is missing.");
+    }
+
+    const cacheKey = buildCacheEntryKey(countryCode);
+    const cachedCities = getCacheValue(geoNamesCache, cacheKey);
+
+    if (cachedCities) return cachedCities;
+
+    const searchParams = new URLSearchParams({
+        country: countryCode.toUpperCase(),
+        featureClass: "P",
+        cities: "cities15000",
+        maxRows: String(cityCount * geoNamesMaxRowsMultiplier),
+        orderby: "population",
+        lang: geoNamesLanguage,
+        username: geoNamesUsername
+    });
+
+    const cities = await fetchGeoNamesCities(geoNamesEndpoint, searchParams, 0);
+
+    if (cities.length) {
+        setCacheValue(geoNamesCache, cacheKey, cities);
+        return cities;
+    }
+
+    throw new Error("Top cities could not be loaded right now. Please try again.");
+}
+
+/* Fetches popular place candidates around a city center */
+async function fetchPopularPlacesNearCity(city) {
+    const searchParams = new URLSearchParams({
+        apikey: openTripMapApiKey,
+        radius: String(cityRadiusInMeters),
+        lon: String(city.lng),
+        lat: String(city.lat),
+        format: "json",
+        limit: String(cityFetchLimit),
+        rate: popularPlacesRate
+    });
+    const url = `${API_BASE_URLS.openTripMap}/radius?${searchParams.toString()}`;
+
+    return fetchJson(url);
 }
 
 /* Fetches one country by name from REST Countries */
 export async function fetchCountryByName(countryName) {
     const encodedCountryName = encodeURIComponent(countryName);
-    const url = `${REST_COUNTRIES_BASE_URL}/name/${encodedCountryName}?fullText=true`;
+    const url = `${API_BASE_URLS.restCountries}/name/${encodedCountryName}?fullText=true`;
 
     try {
         const results = await fetchJson(url);
@@ -115,18 +155,17 @@ export async function fetchCountryByName(countryName) {
 
 /* Fetches a landscape photo related to the selected country */
 export async function fetchCountryBackgroundImage(countryName) {
-    if (!PIXABAY_API_KEY) {
+    if (!pixabayApiKey) {
         return null;
     }
 
-    const cachedImage = getCachedCountryImage(countryName);
+    const cacheKey = buildCacheEntryKey(countryName);
+    const cachedImage = getCacheValue(pixabayCache, cacheKey);
 
-    if (cachedImage) {
-        return cachedImage;
-    }
+    if (cachedImage) return cachedImage;
 
     const searchParams = new URLSearchParams({
-        key: PIXABAY_API_KEY,
+        key: pixabayApiKey,
         q: `${countryName} landscape`,
         image_type: "photo",
         orientation: "horizontal",
@@ -135,10 +174,8 @@ export async function fetchCountryBackgroundImage(countryName) {
         order: "popular",
         per_page: "3"
     });
-
-    const url = `${PIXABAY_BASE_URL}?${searchParams.toString()}`;
-    const imageData = await fetchJson(url);
-    const [image] = imageData.hits ?? [];
+    const { hits = [] } = await fetchJson(`${API_BASE_URLS.pixabay}?${searchParams.toString()}`);
+    const [image] = hits;
 
     if (!image) {
         return null;
@@ -153,7 +190,64 @@ export async function fetchCountryBackgroundImage(countryName) {
             : ""
     };
 
-    cacheCountryImage(countryName, backgroundImage);
-
+    setCacheValue(pixabayCache, cacheKey, backgroundImage);
     return backgroundImage;
+}
+
+/* Fetches popular places by combining the country's selected largest cities */
+export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACES_CONFIG.totalLimit) {
+    if (!openTripMapApiKey) {
+        throw new Error("OpenTripMap API key is missing.");
+    }
+
+    const topCities = await fetchTopCitiesByCountry(country.countryCode);
+
+    if (!topCities.length) {
+        throw new Error("Top cities could not be found for this country.");
+    }
+
+    const seenPlaceIds = new Set();
+    const seenPlaceNamesByCity = new Map();
+    const popularPlaces = [];
+
+    for (const [cityIndex, city] of topCities.entries()) {
+        const cityPlaces = await fetchPopularPlacesNearCity(city);
+        const citySeenNames = seenPlaceNamesByCity.get(city.name) ?? [];
+        const rankedCityPlaces = cityPlaces
+            .filter((place) => {
+                const kinds = (place.kinds ?? "").split(",");
+
+                return !seenPlaceIds.has(place.xid)
+                    && Boolean(place.name?.trim())
+                    && !kinds.some((kind) => excludedKinds.has(kind));
+            })
+            .sort((firstPlace, secondPlace) => (secondPlace.rate ?? 0) - (firstPlace.rate ?? 0));
+        const cityLimit = cityResultDistribution[cityIndex] ?? 0;
+        let addedPlaceCount = 0;
+
+        for (const place of rankedCityPlaces) {
+            if (addedPlaceCount >= cityLimit || popularPlaces.length >= limit) {
+                break;
+            }
+
+            const normalizedPlaceName = buildCanonicalText(place.name ?? "", genericNameTokens);
+
+            if (!normalizedPlaceName || hasSimilarValue(citySeenNames, normalizedPlaceName)) {
+                continue;
+            }
+
+            seenPlaceIds.add(place.xid);
+            citySeenNames.push(normalizedPlaceName);
+            seenPlaceNamesByCity.set(city.name, citySeenNames);
+            popularPlaces.push({
+                id: place.xid,
+                name: place.name,
+                kinds: place.kinds ?? "",
+                sourceCity: city.name
+            });
+            addedPlaceCount += 1;
+        }
+    }
+
+    return popularPlaces;
 }

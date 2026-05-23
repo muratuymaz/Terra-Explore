@@ -5,3 +5,6 @@ Thumbs.db
 .idea/
 
 *.log
+
+# Local API keys
+js/config.js

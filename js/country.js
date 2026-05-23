@@ -1,4 +1,19 @@
-import { fetchCountryBackgroundImage, fetchCountryByName } from "./api.js";
+import {
+    fetchCountryBackgroundImage,
+    fetchCountryByName,
+    fetchPopularPlacesByCountry
+} from "./api.js";
+import {
+    buildCacheEntryKey,
+    formatCurrencies,
+    formatList,
+    formatNumber,
+    getCacheValue,
+    getQueryParam,
+    setCacheValue,
+    toTitleCase
+} from "./utils.js";
+import { CACHE_CONFIG, POPULAR_PLACES_CONFIG } from "./config.js";
 
 const elements = {
     pageBody: document.querySelector("#countryBody"),
@@ -8,50 +23,81 @@ const elements = {
     populationText: document.querySelector("#populationText"),
     languageText: document.querySelector("#languageText"),
     currencyText: document.querySelector("#currencyText"),
-    discoverGemsButton: document.querySelector("#discoverGemsBtn"),
-    gemsGrid: document.querySelector("#gemsGrid")
+    popularPlacesButton: document.querySelector("#popularPlacesBtn"),
+    popularPlacesGrid: document.querySelector("#popularPlacesGrid"),
+    popularPlacesFeedback: document.querySelector("#popularPlacesFeedback")
 };
 
-/* Reads the selected country name from the query string */
-function getCountryNameFromUrl() {
-    const searchParams = new URLSearchParams(window.location.search);
-    const countryName = searchParams.get("name");
+let selectedCountry = null;
+let isPopularPlacesLoading = false;
 
-    return countryName ? countryName.trim() : "";
+/* Formats OpenTripMap kinds into a cleaner card label */
+function getPlaceCategory(kindsText = "") {
+    const category = kindsText
+        .split(",")
+        .find((kind) => kind && kind !== "interesting_places")
+        ?? "popular place";
+
+    return toTitleCase(category.replace(/_/g, " "));
 }
 
-/* Formats large population values in a more readable way */
-function formatPopulation(population) {
-    return new Intl.NumberFormat("en-US").format(population);
-}
-
-/* Joins list values into a clean text string for the UI */
-function formatList(values, fallbackText = "Unknown") {
-    return values.length ? values.join(", ") : fallbackText;
-}
-
-/* Formats the currency object values returned by the API */
-function formatCurrencies(currencies) {
-    if (!currencies.length) {
-        return "Unknown";
+/* Shows helper text for loading, errors, or empty results under the action button */
+function setPopularPlacesFeedback(message = "") {
+    if (!elements.popularPlacesFeedback) {
+        return;
     }
 
-    return currencies
-        .map((currency) => {
-            const currencyName = currency.name ?? "Unknown currency";
-            const currencySymbol = currency.symbol ? ` (${currency.symbol})` : "";
+    elements.popularPlacesFeedback.textContent = message;
+    elements.popularPlacesFeedback.hidden = !message;
+}
 
-            return `${currencyName}${currencySymbol}`;
-        })
-        .join(", ");
+/* Renders the popular places list as simple cards */
+function renderPopularPlaces(places) {
+    if (!elements.popularPlacesGrid) {
+        return;
+    }
+
+    elements.popularPlacesGrid.innerHTML = "";
+
+    places.forEach((place) => {
+        const placeCard = document.createElement("article");
+        const title = document.createElement("h3");
+        const category = document.createElement("p");
+        const location = document.createElement("p");
+
+        placeCard.className = "place-card";
+        title.textContent = place.name;
+        category.textContent = getPlaceCategory(place.kinds);
+        location.textContent = place.sourceCity
+            ? place.sourceCity
+            : "Location details not available";
+
+        placeCard.append(title, category, location);
+        elements.popularPlacesGrid.append(placeCard);
+    });
+}
+
+/* Keeps the button state and label in sync during requests */
+function setPopularPlacesLoadingState(isLoading) {
+    isPopularPlacesLoading = isLoading;
+
+    if (!elements.popularPlacesButton) {
+        return;
+    }
+
+    elements.popularPlacesButton.disabled = isLoading;
+    elements.popularPlacesButton.textContent = isLoading
+        ? "Loading Popular Places..."
+        : "Show Popular Places";
 }
 
 /* Renders the basic country details on the page */
 function renderCountryDetails(country) {
     document.title = `TerraExplore | ${country.name}`;
+    selectedCountry = country;
     elements.countryName.textContent = country.name;
     elements.capitalText.textContent = country.capital;
-    elements.populationText.textContent = formatPopulation(country.population);
+    elements.populationText.textContent = formatNumber(country.population);
     elements.languageText.textContent = formatList(country.languages);
     elements.currencyText.textContent = formatCurrencies(country.currencies);
 
@@ -61,9 +107,8 @@ function renderCountryDetails(country) {
         elements.countryFlag.hidden = false;
     }
 
-    if (country.latlng.length === 2) {
-        elements.discoverGemsButton?.removeAttribute("disabled");
-    }
+    setPopularPlacesLoadingState(false);
+    setPopularPlacesFeedback();
 }
 
 /* Applies the fetched background image if one is available */
@@ -78,23 +123,72 @@ function applyBackgroundImage(backgroundImage) {
 
 /* Replaces the main content with a simple error message */
 function showPageError(message) {
-    if (!elements.countryName || !elements.gemsGrid) {
+    if (!elements.countryName || !elements.popularPlacesGrid) {
         return;
     }
 
+    selectedCountry = null;
+    isPopularPlacesLoading = false;
     elements.countryName.textContent = message;
     elements.capitalText.textContent = "-";
     elements.populationText.textContent = "-";
     elements.languageText.textContent = "-";
     elements.currencyText.textContent = "-";
+    setPopularPlacesLoadingState(false);
     elements.countryFlag.hidden = true;
-    elements.discoverGemsButton?.setAttribute("disabled", "true");
-    elements.gemsGrid.innerHTML = "";
+    elements.popularPlacesButton?.setAttribute("disabled", "true");
+    setPopularPlacesFeedback(message);
+    elements.popularPlacesGrid.innerHTML = "";
+}
+
+/* Loads and renders the country's popular places on demand */
+async function handlePopularPlacesRequest() {
+    if (!selectedCountry || isPopularPlacesLoading) {
+        return;
+    }
+
+    const cacheKey = buildCacheEntryKey(selectedCountry.name);
+    const cachedPlaces = getCacheValue(CACHE_CONFIG.popularPlaces, cacheKey);
+
+    if (cachedPlaces) {
+        setPopularPlacesFeedback();
+        return renderPopularPlaces(cachedPlaces);
+    }
+
+    try {
+        setPopularPlacesLoadingState(true);
+        setPopularPlacesFeedback("Finding popular places...");
+
+        const places = await fetchPopularPlacesByCountry(selectedCountry, POPULAR_PLACES_CONFIG.totalLimit);
+
+        if (!places.length) {
+            elements.popularPlacesGrid.innerHTML = "";
+            return setPopularPlacesFeedback("No popular places were found for this country.");
+        }
+
+        setCacheValue(CACHE_CONFIG.popularPlaces, cacheKey, places);
+        setPopularPlacesFeedback();
+        renderPopularPlaces(places);
+    } catch (error) {
+        elements.popularPlacesGrid.innerHTML = "";
+        setPopularPlacesFeedback(
+            error instanceof Error
+                ? error.message
+                : "Popular places could not be loaded."
+        );
+    } finally {
+        setPopularPlacesLoadingState(false);
+    }
+}
+
+/* Connects the country action button to the popular places flow */
+function bindPopularPlacesButton() {
+    elements.popularPlacesButton?.addEventListener("click", handlePopularPlacesRequest);
 }
 
 /* Loads the country data and optional background image together */
 async function loadCountryPage() {
-    const countryName = getCountryNameFromUrl();
+    const countryName = getQueryParam("name");
 
     if (!countryName) {
         showPageError("No country was selected.");
@@ -109,12 +203,13 @@ async function loadCountryPage() {
         const backgroundImage = await fetchCountryBackgroundImage(country.name);
         applyBackgroundImage(backgroundImage);
     } catch (error) {
-        const errorMessage = error instanceof Error
-            ? error.message
-            : "Something went wrong while loading the country.";
-
-        showPageError(errorMessage);
+        showPageError(
+            error instanceof Error
+                ? error.message
+                : "Something went wrong while loading the country."
+        );
     }
 }
 
+bindPopularPlacesButton();
 loadCountryPage();

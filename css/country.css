@@ -59,8 +59,7 @@
     color: var(--green);
 }
 
-/* Hidden Gems Section */
-/* Container for the "Secret Places" feature */
+/* Popular places section */
 .places-area {
     border-top: 2px solid #ddd;
     padding-top: 30px;
@@ -71,6 +70,12 @@
     color: var(--brown);
     font-size: 20px;
     margin-bottom: 15px;
+}
+
+.places-feedback {
+    font-size: 16px;
+    margin-top: 16px;
+    min-height: 24px;
 }
 
 /* Flexbox container for the dynamic place cards */
@@ -88,6 +93,20 @@
     border-radius: 12px;
     border-left: 5px solid var(--brown);
     width: 250px;
+}
+
+.place-card h3 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.place-card p {
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.place-card p:last-child {
+    margin-bottom: 0;
 }
 
 /* Overrides for screens 768px wide or smaller */
