@@ -1,3 +1,27 @@
+/* Country flag marker for map */
+.country-flag-divicon {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.country-flag-marker {
+    width: 36px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.85);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #ddd;
+    overflow: hidden;
+}
+.country-flag-marker img {
+    width: 32px;
+    height: 20px;
+    object-fit: contain;
+    display: block;
+}
 /* Google Fonts Import */
 @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
 

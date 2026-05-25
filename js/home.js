@@ -84,10 +84,20 @@ function ensureWorldMap() {
         return;
     }
 
+
+    // We set the map bounds so user cannot go too far up or down.
+    // User can only move left and right (around the world).
+    // This helps to keep the map looking good and not broken.
+    const southWest = window.L.latLng(-85, -180); // Bottom left corner of the world
+    const northEast = window.L.latLng(85, 180);   // Top right corner of the world
+    const bounds = window.L.latLngBounds(southWest, northEast); // The area user can see
+
     worldMap = window.L.map(elements.worldMapContainer, {
         zoomControl: true,
         minZoom: 2,
-        worldCopyJump: true
+        worldCopyJump: true,
+        maxBounds: bounds, // This stops user from moving map out of the world
+        maxBoundsViscosity: 1.0 // 1.0 means user cannot drag outside at all
     }).setView([20, 0], 2);
 
     window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -131,11 +141,25 @@ function renderCountryMarkers(countries) {
     worldMarkersLayer.clearLayers();
 
     countries.forEach((country) => {
+        // Bayraklı marker oluştur
+        const flagUrl = country.flagUrl || (country.flags && (country.flags.svg || country.flags.png)) || "";
+        const iconHtml = flagUrl
+            ? `<div class="country-flag-marker" style="width:36px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.85);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #ddd;overflow:hidden;">
+                    <img src="${flagUrl}" alt="${country.name} flag" style="width:32px;height:20px;object-fit:contain;display:block;" />
+               </div>`
+            : `<div class="country-flag-marker" style="width:36px;height:24px;background:#eee;border-radius:4px;"></div>`;
+        const flagIcon = window.L.divIcon({
+            className: "country-flag-divicon",
+            html: iconHtml,
+            iconSize: [36, 24],
+            iconAnchor: [18, 12],
+            popupAnchor: [0, -12]
+        });
         window.L.marker([country.lat, country.lng], {
-            icon: createCountryMarkerIcon(country.name),
+            icon: flagIcon,
             riseOnHover: true
         })
-            .bindTooltip(country.name, { direction: "top", offset: [0, -6] })
+            .bindTooltip(country.name, { direction: "top", offset: [0, -14] })
             .on("click", () => redirectToCountry(country.name))
             .addTo(worldMarkersLayer);
     });
@@ -161,6 +185,8 @@ function bindSearchControls() {
         clearError();
     });
 }
+
+bindSearchControls();
 
 async function loadWorldMap() {
     if (!elements.worldMapContainer) {

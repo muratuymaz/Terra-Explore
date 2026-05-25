@@ -153,7 +153,7 @@ export async function fetchCountryByName(countryName) {
 }
 
 export async function fetchCountriesForMap() {
-    const fields = "name,latlng";
+    const fields = "name,latlng,flags";
     const countries = await fetchJson(`${API_BASE_URLS.restCountries}/all?fields=${fields}`);
 
     return countries
@@ -161,7 +161,8 @@ export async function fetchCountriesForMap() {
         .map((country) => ({
             name: country.name.common,
             lat: country.latlng[0],
-            lng: country.latlng[1]
+            lng: country.latlng[1],
+            flagUrl: country.flags?.svg || country.flags?.png || ""
         }));
 }
 
