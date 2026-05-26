@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraExplore | Sign Up</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/signup.css">
+</head>
+<body>
+    <!-- Top menu stays the same as other pages -->
+    <header class="menu">
+        <div class="logo">
+            <a href="index.html"><h1>Terra Explore</h1></a>
+        </div>
+        
+        <nav class="menu-links">
+            <a href="#">About Us</a>
+            <a href="#">Popular Places</a>
+        </nav>
+
+        <div class="menu-actions">
+            <a class="button-light" href="index.html">Back Home</a>
+        </div>
+    </header>
+
+    <!-- Main sign up content -->
+    <main class="signup-page">
+        <!-- Short intro text for the page -->
+        <section class="signup-hero">
+            <h2>Start Your TerraExplore Journey</h2>
+            <p>Create a profile to save destinations, track favorite places, and plan your next adventure.</p>
+        </section>
+
+        <!-- Two-column layout: form -->
+        <section class="signup-grid">
+            <!-- Sign up form card -->
+            <form class="signup-card" aria-label="Sign up form">
+                <h3>Create Your Account</h3>
+
+                <label class="field">
+                    <span>Full Name</span>
+                    <input type="text" name="fullName" placeholder="e.g., Elif Demir" autocomplete="name" required>
+                </label>
+
+                <label class="field">
+                    <span>Email Address</span>
+                    <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <input type="password" name="password" placeholder="Create a secure password" autocomplete="new-password" required>
+                </label>
+
+                <label class="field">
+                    <span>Home Country</span>
+                    <input type="text" name="country" placeholder="e.g., Turkey" autocomplete="country-name">
+                </label>
+
+                <button type="submit" class="button">Create Account</button>
+                <p class="form-note">By signing up, you agree to receive travel inspiration from Terra Explore.</p>
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer matches the home page style -->
+    <footer class="footer">
+        <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
+    </footer>
+</body>
+</html>
