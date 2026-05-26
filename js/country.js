@@ -1,6 +1,7 @@
 import {
     fetchCountryBackgroundImage,
     fetchCountryByName,
+    fetchCountryPlaceBackgroundImage,
     fetchPopularPlacesByCountry
 } from "./api.js";
 import {
@@ -117,7 +118,7 @@ function applyBackgroundImage(backgroundImage) {
         return;
     }
 
-    elements.pageBody.style.backgroundImage = `linear-gradient(rgba(250, 246, 240, 0.2), rgba(250, 246, 240, 0.2)), url("${backgroundImage.imageUrl}")`;
+    elements.pageBody.style.backgroundImage = `linear-gradient(rgba(46, 50, 48, 0.55), rgba(46, 50, 48, 0.55)), url("${backgroundImage.imageUrl}")`;
     elements.pageBody.setAttribute("aria-label", backgroundImage.altText || "Country background image");
 }
 
@@ -198,7 +199,13 @@ async function loadCountryPage() {
     try {
         const country = await fetchCountryByName(countryName);
         renderCountryDetails(country);
-        const backgroundImage = await fetchCountryBackgroundImage(country.name);
+        /* Try a random popular place photo first */
+        let backgroundImage = await fetchCountryPlaceBackgroundImage(country);
+
+        /* If it fails, use a normal country landscape */
+        if (!backgroundImage) {
+            backgroundImage = await fetchCountryBackgroundImage(country.name);
+        }
         applyBackgroundImage(backgroundImage);
     } catch (error) {
         showPageError(

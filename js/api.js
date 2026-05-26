@@ -219,6 +219,56 @@ export async function fetchCountryBackgroundImage(countryName) {
     return backgroundImage;
 }
 
+/* Picks a random popular place and finds a photo for it */
+export async function fetchCountryPlaceBackgroundImage(country) {
+    if (!pixabayApiKey) {
+        return null;
+    }
+
+    const cacheKey = buildCacheEntryKey(`${country.name}-place-photo`);
+    const cachedImage = getCacheValue(pixabayCache, cacheKey);
+
+    if (cachedImage) return cachedImage;
+
+    const places = await fetchPopularPlacesByCountry(country, POPULAR_PLACES_CONFIG.totalLimit);
+
+    if (!places.length) {
+        return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * places.length);
+    const selectedPlace = places[randomIndex];
+    const searchTerm = `${selectedPlace.name} ${country.name}`;
+    const searchParams = new URLSearchParams({
+        key: pixabayApiKey,
+        q: searchTerm,
+        image_type: "photo",
+        orientation: "horizontal",
+        category: "places",
+        safesearch: "true",
+        order: "popular",
+        per_page: "3"
+    });
+    const { hits = [] } = await fetchJson(`${API_BASE_URLS.pixabay}?${searchParams.toString()}`);
+    const [image] = hits;
+
+    if (!image) {
+        return null;
+    }
+
+    const backgroundImage = {
+        imageUrl: image.largeImageURL || image.webformatURL || "",
+        altText: image.tags || `${selectedPlace.name} in ${country.name}`,
+        photographerName: image.user || "",
+        photographerProfile: image.user_id
+            ? `https://pixabay.com/users/${image.user}-${image.user_id}/`
+            : ""
+    };
+
+    setCacheValue(pixabayCache, cacheKey, backgroundImage);
+    return backgroundImage;
+}
+
 /* Fetches popular places by combining the country's selected largest cities */
 export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACES_CONFIG.totalLimit) {
     if (!openTripMapApiKey) {
