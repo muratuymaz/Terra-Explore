@@ -114,20 +114,26 @@ function getMarkerPalette(countryName) {
     return markerPalette[paletteIndex];
 }
 
-function createCountryMarkerIcon(countryName) {
+function createCountryMarkerIcon(countryName, flagUrl) {
     const { start, end, ring } = getMarkerPalette(countryName);
+    const hasFlag = Boolean(flagUrl);
+    const flagMarkup = hasFlag
+        ? `<span class="country-marker-flag"><img src="${flagUrl}" alt="${countryName} flag"></span>`
+        : "";
 
     return window.L.divIcon({
         className: "country-marker-icon",
         html: `
-            <span class="country-marker-shell" style="--marker-start:${start}; --marker-end:${end}; --marker-ring:${ring};">
+            <span class="country-marker-pole"></span>
+            <span class="country-marker-shell ${hasFlag ? "has-flag" : ""}" style="--marker-start:${start}; --marker-end:${end}; --marker-ring:${ring};">
                 <span class="country-marker-halo"></span>
                 <span class="country-marker-core"></span>
                 <span class="country-marker-dot"></span>
+                ${flagMarkup}
             </span>
         `,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
+        iconSize: [24, 34],
+        iconAnchor: [12, 32]
     });
 }
 
@@ -141,31 +147,22 @@ function renderCountryMarkers(countries) {
     worldMarkersLayer.clearLayers();
 
     countries.forEach((country) => {
-        // Bayraklı marker oluştur
-        const flagUrl = country.flagUrl || (country.flags && (country.flags.svg || country.flags.png)) || "";
-        const iconHtml = flagUrl
-            ? `<div class="country-flag-marker" style="width:36px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.85);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #ddd;overflow:hidden;">
-                    <img src="${flagUrl}" alt="${country.name} flag" style="width:32px;height:20px;object-fit:contain;display:block;" />
-               </div>`
-            : `<div class="country-flag-marker" style="width:36px;height:24px;background:#eee;border-radius:4px;"></div>`;
-        const flagIcon = window.L.divIcon({
-            className: "country-flag-divicon",
-            html: iconHtml,
-            iconSize: [36, 24],
-            iconAnchor: [18, 12],
-            popupAnchor: [0, -12]
-        });
+        const markerIcon = createCountryMarkerIcon(country.name, country.flagUrl);
+        const tooltipText = country.capital
+            ? `${country.name} • ${country.capital}`
+            : country.name;
+
         window.L.marker([country.lat, country.lng], {
-            icon: flagIcon,
+            icon: markerIcon,
             riseOnHover: true
         })
-            .bindTooltip(country.name, { direction: "top", offset: [0, -14] })
+            .bindTooltip(tooltipText, { direction: "top", offset: [0, -10] })
             .on("click", () => redirectToCountry(country.name))
             .addTo(worldMarkersLayer);
     });
 
     window.setTimeout(() => worldMap.invalidateSize(), 0);
-    setMapFeedback(`Showing ${countries.length} countries. Click one to explore it.`);
+    setMapFeedback(`Showing ${countries.length} capital markers. Click one to explore it.`);
 }
 
 /* Connects the search input and button to the same redirect logic */

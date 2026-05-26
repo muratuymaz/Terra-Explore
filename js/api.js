@@ -153,17 +153,29 @@ export async function fetchCountryByName(countryName) {
 }
 
 export async function fetchCountriesForMap() {
-    const fields = "name,latlng,flags";
+    const fields = "name,capital,capitalInfo,latlng,flags";
     const countries = await fetchJson(`${API_BASE_URLS.restCountries}/all?fields=${fields}`);
 
     return countries
-        .filter((country) => Array.isArray(country.latlng) && country.latlng.length >= 2 && country.name?.common)
-        .map((country) => ({
-            name: country.name.common,
-            lat: country.latlng[0],
-            lng: country.latlng[1],
-            flagUrl: country.flags?.svg || country.flags?.png || ""
-        }));
+        .filter((country) => country.name?.common)
+        .map((country) => {
+            const capitalCoordinates = Array.isArray(country.capitalInfo?.latlng)
+                ? country.capitalInfo.latlng
+                : [];
+            const fallbackCoordinates = Array.isArray(country.latlng) ? country.latlng : [];
+            const [capitalLat, capitalLng] = capitalCoordinates.length >= 2
+                ? capitalCoordinates
+                : fallbackCoordinates;
+
+            return {
+                name: country.name.common,
+                capital: country.capital?.[0] ?? "",
+                lat: Number(capitalLat),
+                lng: Number(capitalLng),
+                flagUrl: country.flags?.svg || country.flags?.png || ""
+            };
+        })
+        .filter((country) => Number.isFinite(country.lat) && Number.isFinite(country.lng));
 }
 
 /* Fetches a landscape photo related to the selected country */

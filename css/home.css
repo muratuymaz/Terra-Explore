@@ -82,19 +82,41 @@
 .country-marker-icon {
     background: transparent;
     border: 0;
+    position: relative;
 }
 
-.country-marker-shell,
-.country-marker-icon span {
+.country-marker-shell {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 50%;
+    width: 20px;
+    height: 20px;
     display: block;
     border-radius: 999px;
+    transform: translateX(-50%);
+}
+
+.country-marker-icon span {
+    position: absolute;
+    display: block;
+    border-radius: 999px;
+}
+
+.country-marker-pole {
+    top: 14px;
+    left: 50%;
+    width: 2px;
+    height: 16px;
+    background: #6c562f;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 1px rgba(46, 35, 18, 0.25);
 }
 
 .country-marker-halo {
     background: rgba(247, 242, 233, 0.92);
     box-shadow: 0 0 0 2px var(--marker-ring), 0 3px 8px rgba(63, 53, 40, 0.14);
+    inset: 0;
 }
 
 .country-marker-core {
@@ -104,8 +126,27 @@
 }
 
 .country-marker-dot {
-    inset: 4px;
+    inset: 5px;
     background: linear-gradient(145deg, var(--marker-end), var(--marker-start));
+}
+
+.country-marker-flag {
+    inset: 3px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.92);
+    z-index: 2;
+}
+
+.country-marker-flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.country-marker-shell.has-flag .country-marker-dot {
+    opacity: 0;
 }
 
 /* Responsive Design (Mobile & Tablets) */
