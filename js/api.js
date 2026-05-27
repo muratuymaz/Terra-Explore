@@ -58,7 +58,9 @@ async function fetchGeoNamesCities(endpoint, searchParams, callbackSuffix) {
         throw new Error("Map data is unavailable right now.");
     }
 
-    return (response.geonames ?? [])
+    const cityResults = response.geonames || [];
+
+    return cityResults
         .filter((city) => city.name && Number(city.population) > 0)
         .sort((firstCity, secondCity) => Number(secondCity.population) - Number(firstCity.population))
         .slice(0, cityCount)
@@ -74,6 +76,15 @@ async function fetchGeoNamesCities(endpoint, searchParams, callbackSuffix) {
 function mapCountryResponse(country) {
     let languages = [];
     let currencies = [];
+    let name = "Unknown Country";
+    let countryCode = "";
+    let flagUrl = "";
+    let capital = "Unknown";
+    let population = 0;
+    let lat = Number.NaN;
+    let lng = Number.NaN;
+    let capitalLat = Number.NaN;
+    let capitalLng = Number.NaN;
 
     if (country.languages) {
         languages = Object.values(country.languages);
@@ -83,16 +94,46 @@ function mapCountryResponse(country) {
         currencies = Object.values(country.currencies);
     }
 
+    if (country.name && country.name.common) {
+        name = country.name.common;
+    }
+
+    if (country.cca2) {
+        countryCode = country.cca2.toLowerCase();
+    }
+
+    if (country.flags) {
+        flagUrl = country.flags.svg || country.flags.png || "";
+    }
+
+    if (Array.isArray(country.capital) && country.capital.length) {
+        capital = country.capital[0];
+    }
+
+    if (typeof country.population === "number") {
+        population = country.population;
+    }
+
+    if (Array.isArray(country.latlng)) {
+        lat = Number(country.latlng[0]);
+        lng = Number(country.latlng[1]);
+    }
+
+    if (country.capitalInfo && Array.isArray(country.capitalInfo.latlng)) {
+        capitalLat = Number(country.capitalInfo.latlng[0]);
+        capitalLng = Number(country.capitalInfo.latlng[1]);
+    }
+
     return {
-        name: country.name?.common ?? "Unknown Country",
-        countryCode: country.cca2?.toLowerCase() ?? "",
-        flagUrl: country.flags?.svg || country.flags?.png || "",
-        capital: country.capital?.[0] ?? "Unknown",
-        population: country.population ?? 0,
-        lat: Number(country.latlng?.[0]),
-        lng: Number(country.latlng?.[1]),
-        capitalLat: Number(country.capitalInfo?.latlng?.[0]),
-        capitalLng: Number(country.capitalInfo?.latlng?.[1]),
+        name,
+        countryCode,
+        flagUrl,
+        capital,
+        population,
+        lat,
+        lng,
+        capitalLat,
+        capitalLng,
         languages,
         currencies
     };
@@ -176,26 +217,36 @@ export async function fetchCountriesForMap() {
     const countries = await fetchJson(API_BASE_URLS.restCountries + "/all?fields=" + fields);
 
     return countries
-        .filter((country) => country.name?.common)
+        .filter((country) => country.name && country.name.common)
         .map((country) => {
             let coordinates = [];
+            let capital = "";
+            let flagUrl = "";
 
             if (Array.isArray(country.latlng)) {
                 coordinates = country.latlng;
             }
 
-            if (Array.isArray(country.capitalInfo?.latlng) && country.capitalInfo.latlng.length >= 2) {
+            if (country.capitalInfo && Array.isArray(country.capitalInfo.latlng) && country.capitalInfo.latlng.length >= 2) {
                 coordinates = country.capitalInfo.latlng;
+            }
+
+            if (Array.isArray(country.capital) && country.capital.length) {
+                capital = country.capital[0];
+            }
+
+            if (country.flags) {
+                flagUrl = country.flags.svg || country.flags.png || "";
             }
 
             const [capitalLat, capitalLng] = coordinates;
 
             return {
                 name: country.name.common,
-                capital: country.capital?.[0] ?? "",
+                capital,
                 lat: Number(capitalLat),
                 lng: Number(capitalLng),
-                flagUrl: country.flags?.svg || country.flags?.png || ""
+                flagUrl
             };
         })
         .filter((country) => Number.isFinite(country.lat) && Number.isFinite(country.lng));
@@ -207,8 +258,16 @@ export async function fetchCountryBackgroundImage(country) {
         return null;
     }
 
-    const countryName = typeof country === "string" ? country : country?.name ?? "";
-    const countryCapital = typeof country === "string" ? "" : country?.capital ?? "";
+    let countryName = "";
+    let countryCapital = "";
+
+    if (typeof country === "string") {
+        countryName = country;
+    } else if (country) {
+        countryName = country.name || "";
+        countryCapital = country.capital || "";
+    }
+
     let preferredCity = countryCapital;
 
     if (["turkey", "türkiye"].includes(countryName.trim().toLowerCase())) {
@@ -294,17 +353,18 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
     try {
         for (const [cityIndex, city] of topCities.entries()) {
             const cityPlaces = await fetchPopularPlacesNearCity(city);
-            const citySeenNames = seenPlaceNamesByCity.get(city.name) ?? [];
+            const citySeenNames = seenPlaceNamesByCity.get(city.name) || [];
             const rankedCityPlaces = cityPlaces
                 .filter((place) => {
-                    const kinds = (place.kinds ?? "").split(",");
+                    const kinds = (place.kinds || "").split(",");
+                    const placeName = (place.name || "").trim();
 
                     return !seenPlaceIds.has(place.xid)
-                        && Boolean(place.name?.trim())
+                        && Boolean(placeName)
                         && !kinds.some((kind) => excludedKinds.has(kind));
                 })
-                .sort((firstPlace, secondPlace) => (secondPlace.rate ?? 0) - (firstPlace.rate ?? 0));
-            const cityLimit = cityResultDistribution[cityIndex] ?? 0;
+                .sort((firstPlace, secondPlace) => (secondPlace.rate || 0) - (firstPlace.rate || 0));
+            const cityLimit = cityResultDistribution[cityIndex] || 0;
             let addedPlaceCount = 0;
 
             for (const place of rankedCityPlaces) {
@@ -312,7 +372,7 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
                     break;
                 }
 
-                const normalizedPlaceName = cleanPlaceName(place.name ?? "", genericNameTokens);
+                const normalizedPlaceName = cleanPlaceName(place.name || "", genericNameTokens);
 
                 if (!normalizedPlaceName || isSimilarName(citySeenNames, normalizedPlaceName)) {
                     continue;
@@ -324,10 +384,10 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
                 popularPlaces.push({
                     id: place.xid,
                     name: place.name,
-                    kinds: place.kinds ?? "",
+                    kinds: place.kinds || "",
                     sourceCity: city.name,
-                    lat: Number(place.point?.lat),
-                    lng: Number(place.point?.lon)
+                    lat: Number(place.point && place.point.lat),
+                    lng: Number(place.point && place.point.lon)
                 });
                 addedPlaceCount += 1;
             }

@@ -45,14 +45,11 @@ function normalizeKey(value) {
 
 /* Builds one stable key for a place using its name, city, and country */
 function buildPlaceKey(place, countryName) {
-    return [
-        place.name,
-        place.sourceCity,
-        countryName
-    ]
-        .map(normalizeKey)
-        .filter(Boolean)
-        .join("|");
+    const placeName = normalizeKey(place.name);
+    const cityName = normalizeKey(place.sourceCity);
+    const normalizedCountryName = normalizeKey(countryName);
+
+    return [placeName, cityName, normalizedCountryName].filter(Boolean).join("|");
 }
 
 /* Toggles a country in one saved list and returns the new active state */
@@ -76,13 +73,6 @@ function toggleCountryInList(storageKey, countryName) {
     countries.unshift(trimmedCountryName);
     writeList(storageKey, countries);
     return true;
-}
-
-/* Checks whether a country already exists in one saved list */
-function hasCountryInList(storageKey, countryName) {
-    const countryKey = normalizeKey(countryName);
-
-    return readList(storageKey).some((country) => normalizeKey(country) === countryKey);
 }
 
 /* Keeps the recent country list fresh and limited to the latest few entries */
@@ -112,7 +102,10 @@ export function toggleFavoriteCountry(countryName) {
 
 /* Checks whether the selected country is already favorited */
 export function isFavoriteCountry(countryName) {
-    return hasCountryInList(STORAGE_KEYS.favoriteCountries, countryName);
+    const countryKey = normalizeKey(countryName);
+
+    return readList(STORAGE_KEYS.favoriteCountries)
+        .some((country) => normalizeKey(country) === countryKey);
 }
 
 /* Returns all saved favorite countries for the profile page */
@@ -182,11 +175,18 @@ export function setCountryTravelStatus(countryName, status) {
 
 /* Returns the current travel status for one country */
 export function getCountryTravelStatus(countryName) {
-    if (hasCountryInList(STORAGE_KEYS.visitedCountries, countryName)) {
+    const countryKey = normalizeKey(countryName);
+    const isVisited = readList(STORAGE_KEYS.visitedCountries)
+        .some((country) => normalizeKey(country) === countryKey);
+
+    if (isVisited) {
         return "visited";
     }
 
-    if (hasCountryInList(STORAGE_KEYS.wantToVisitCountries, countryName)) {
+    const wantsToVisit = readList(STORAGE_KEYS.wantToVisitCountries)
+        .some((country) => normalizeKey(country) === countryKey);
+
+    if (wantsToVisit) {
         return "want";
     }
 

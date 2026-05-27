@@ -1,6 +1,12 @@
 /* Reads and trims a query parameter from the current page URL */
 export function getQueryParam(paramName) {
-    return new URLSearchParams(window.location.search).get(paramName)?.trim() ?? "";
+    const paramValue = new URLSearchParams(window.location.search).get(paramName);
+
+    if (!paramValue) {
+        return "";
+    }
+
+    return paramValue.trim();
 }
 
 /* Formats numeric values for the UI */
@@ -25,7 +31,11 @@ export function formatCurrencies(currencies) {
 
     return currencies
         .map((currency) => {
-            const currencyName = currency.name ?? "Unknown currency";
+            let currencyName = "Unknown currency";
+
+            if (currency.name) {
+                currencyName = currency.name;
+            }
             let currencySymbol = "";
 
             if (currency.symbol) {
@@ -50,8 +60,9 @@ export function normalizeText(value) {
     return value
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("en")
-        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .replace(/[^\w\s]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 }
@@ -139,49 +150,50 @@ export function setCacheValue(cacheConfig, entryKey, data) {
 /* Loads JSONP data for endpoints that do not allow cross-origin fetch requests */
 export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
     return new Promise((resolve, reject) => {
-        const resolvedCallbackName = callbackName || ("jsonpCallback" + Date.now());
+        let resolvedCallbackName = callbackName;
+        let isDone = false;
+
+        if (!resolvedCallbackName) {
+            resolvedCallbackName = "jsonpCallback" + Date.now();
+        }
+
         const script = document.createElement("script");
-        let isSettled = false;
+        let timeoutId = 0;
 
         const finalize = () => {
             script.remove();
             delete window[resolvedCallbackName];
-            delete globalThis[resolvedCallbackName];
+            window.clearTimeout(timeoutId);
         };
 
-        const timeoutId = window.setTimeout(() => {
-            if (isSettled) {
+        timeoutId = window.setTimeout(() => {
+            if (isDone) {
                 return;
             }
 
-            isSettled = true;
+            isDone = true;
             finalize();
-            reject(new Error("JSONP request timed out: " + script.src));
+            reject(new Error("City data could not be loaded right now."));
         }, 10000);
 
-        const handleJsonpResponse = (data) => {
-            if (isSettled) {
+        window[resolvedCallbackName] = (data) => {
+            if (isDone) {
                 return;
             }
 
-            isSettled = true;
-            window.clearTimeout(timeoutId);
+            isDone = true;
             finalize();
             resolve(data);
         };
 
-        window[resolvedCallbackName] = handleJsonpResponse;
-        globalThis[resolvedCallbackName] = handleJsonpResponse;
-
         script.onerror = () => {
-            if (isSettled) {
+            if (isDone) {
                 return;
             }
 
-            isSettled = true;
-            window.clearTimeout(timeoutId);
+            isDone = true;
             finalize();
-            reject(new Error("JSONP request failed: " + script.src));
+            reject(new Error("City data could not be loaded right now."));
         };
 
         script.async = true;
@@ -191,7 +203,7 @@ export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
             separator = "&";
         }
 
-        script.src = url + separator + callbackParam + "=" + encodeURIComponent(resolvedCallbackName);
+        script.src = url + separator + callbackParam + "=" + resolvedCallbackName;
         document.head.append(script);
     });
 }

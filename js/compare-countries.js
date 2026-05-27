@@ -37,7 +37,7 @@ function renderCountryOptions(countries) {
     });
 }
 
-/* Renders the side-by-side country facts after both lookups succeed */
+/* Renders the side-by-side country details after both lookups succeed */
 function renderCountryComparison(countryOne, countryTwo) {
     if (!elements.compareResult) {
         return;
@@ -62,7 +62,7 @@ function renderCountryComparison(countryOne, countryTwo) {
     elements.compareResult.hidden = false;
 }
 
-/* Loads both selected countries and shows their key facts together */
+/* Loads both selected countries and shows their key details together */
 async function handleCompareCountries() {
     const firstCountryName = (elements.compareCountryOne?.value ?? "")
         .trim()

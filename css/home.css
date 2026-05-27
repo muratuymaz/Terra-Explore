@@ -158,22 +158,13 @@
 }
 
 .map-legend-dot {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     display: inline-block;
-    border-radius: 999px 999px 999px 2px;
-    transform: rotate(-45deg);
-    background: linear-gradient(145deg, #67a86f, #3c7551);
-    box-shadow: 0 0 0 4px rgba(78, 131, 95, 0.14);
-    position: relative;
-}
-
-.map-legend-dot::after {
-    content: "";
-    position: absolute;
-    inset: 3px;
     border-radius: 999px;
-    background: rgba(250, 246, 240, 0.95);
+    background: #67a86f;
+    border: 2px solid #3c7551;
+    box-shadow: 0 0 0 4px rgba(78, 131, 95, 0.14);
 }
 
 .country-marker-icon {
