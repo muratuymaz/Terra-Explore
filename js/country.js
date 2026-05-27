@@ -1,16 +1,15 @@
 import {
     fetchCountryBackgroundImage,
     fetchCountryByName,
-    fetchCountryPlaceBackgroundImage,
     fetchPopularPlacesByCountry
 } from "./api.js";
 import {
-    buildCacheEntryKey,
     formatCurrencies,
     formatList,
     formatNumber,
     getCacheValue,
     getQueryParam,
+    makeCacheKey,
     setCacheValue,
     toTitleCase
 } from "./utils.js";
@@ -52,6 +51,23 @@ function setPopularPlacesFeedback(message = "") {
     elements.popularPlacesFeedback.hidden = !message;
 }
 
+function buildPlaceMapUrl(place) {
+    const query = [
+        place.name,
+        place.sourceCity,
+        selectedCountry?.name
+    ]
+        .filter(Boolean)
+        .join(", ");
+
+    const searchParams = new URLSearchParams({
+        api: "1",
+        query
+    });
+
+    return "https://www.google.com/maps/search/?" + searchParams.toString();
+}
+
 /* Renders the popular places list as simple cards */
 function renderPopularPlaces(places) {
     if (!elements.popularPlacesGrid) {
@@ -61,20 +77,31 @@ function renderPopularPlaces(places) {
     elements.popularPlacesGrid.innerHTML = "";
 
     places.forEach((place) => {
+        const placeLink = document.createElement("a");
         const placeCard = document.createElement("article");
         const title = document.createElement("h3");
         const category = document.createElement("p");
         const location = document.createElement("p");
+        const action = document.createElement("p");
 
+        placeLink.className = "place-card-link";
+        placeLink.href = buildPlaceMapUrl(place);
+        placeLink.target = "_blank";
+        placeLink.rel = "noopener noreferrer";
         placeCard.className = "place-card";
         title.textContent = place.name;
         category.textContent = getPlaceCategory(place.kinds);
-        location.textContent = place.sourceCity
-            ? place.sourceCity
-            : "Location details not available";
+        location.textContent = "Location details not available";
 
-        placeCard.append(title, category, location);
-        elements.popularPlacesGrid.append(placeCard);
+        if (place.sourceCity) {
+            location.textContent = place.sourceCity;
+        }
+        action.textContent = "Open in Google Maps";
+        action.className = "place-card-action";
+
+        placeCard.append(title, category, location, action);
+        placeLink.append(placeCard);
+        elements.popularPlacesGrid.append(placeLink);
     });
 }
 
@@ -87,14 +114,16 @@ function setPopularPlacesLoadingState(isLoading) {
     }
 
     elements.popularPlacesButton.disabled = isLoading;
-    elements.popularPlacesButton.textContent = isLoading
-        ? "Loading Popular Places..."
-        : "Show Popular Places";
+    elements.popularPlacesButton.textContent = "Show Popular Places";
+
+    if (isLoading) {
+        elements.popularPlacesButton.textContent = "Loading Popular Places...";
+    }
 }
 
 /* Renders the basic country details on the page */
 function renderCountryDetails(country) {
-    document.title = `TerraExplore | ${country.name}`;
+    document.title = "TerraExplore | " + country.name;
     selectedCountry = country;
     elements.countryName.textContent = country.name;
     elements.capitalText.textContent = country.capital;
@@ -104,7 +133,7 @@ function renderCountryDetails(country) {
 
     if (country.flagUrl) {
         elements.countryFlag.src = country.flagUrl;
-        elements.countryFlag.alt = `${country.name} flag`;
+        elements.countryFlag.alt = country.name + " flag";
         elements.countryFlag.hidden = false;
     }
 
@@ -118,7 +147,7 @@ function applyBackgroundImage(backgroundImage) {
         return;
     }
 
-    elements.pageBody.style.backgroundImage = `linear-gradient(rgba(46, 50, 48, 0.55), rgba(46, 50, 48, 0.55)), url("${backgroundImage.imageUrl}")`;
+    elements.pageBody.style.backgroundImage = 'linear-gradient(rgba(46, 50, 48, 0.55), rgba(46, 50, 48, 0.55)), url("' + backgroundImage.imageUrl + '")';
     elements.pageBody.setAttribute("aria-label", backgroundImage.altText || "Country background image");
 }
 
@@ -148,7 +177,7 @@ async function handlePopularPlacesRequest() {
         return;
     }
 
-    const cacheKey = buildCacheEntryKey(selectedCountry.name);
+    const cacheKey = makeCacheKey(selectedCountry.name);
     const cachedPlaces = getCacheValue(CACHE_CONFIG.popularPlaces, cacheKey);
 
     if (cachedPlaces) {
@@ -172,11 +201,13 @@ async function handlePopularPlacesRequest() {
         renderPopularPlaces(places);
     } catch (error) {
         elements.popularPlacesGrid.innerHTML = "";
-        setPopularPlacesFeedback(
-            error instanceof Error
-                ? error.message
-                : "Popular places could not be loaded."
-        );
+        let feedbackMessage = "Popular places could not be loaded.";
+
+        if (error instanceof Error) {
+            feedbackMessage = error.message;
+        }
+
+        setPopularPlacesFeedback(feedbackMessage);
     } finally {
         setPopularPlacesLoadingState(false);
     }
@@ -199,20 +230,22 @@ async function loadCountryPage() {
     try {
         const country = await fetchCountryByName(countryName);
         renderCountryDetails(country);
-        /* Try a random popular place photo first */
-        let backgroundImage = await fetchCountryPlaceBackgroundImage(country);
-
-        /* If it fails, use a normal country landscape */
-        if (!backgroundImage) {
-            backgroundImage = await fetchCountryBackgroundImage(country.name);
-        }
-        applyBackgroundImage(backgroundImage);
     } catch (error) {
-        showPageError(
-            error instanceof Error
-                ? error.message
-                : "Something went wrong while loading the country."
-        );
+        let errorMessage = "Something went wrong while loading the country.";
+
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        showPageError(errorMessage);
+        return;
+    }
+
+    try {
+        const backgroundImage = await fetchCountryBackgroundImage(selectedCountry);
+        applyBackgroundImage(backgroundImage);
+    } catch {
+        /* Background images are optional, so the page should stay usable without one. */
     }
 }
 

@@ -29,7 +29,7 @@ function normalizeCountryName(value) {
 function buildCountryPageUrl(countryName) {
     const searchParams = new URLSearchParams({ name: countryName });
 
-    return `${COUNTRY_PAGE_PATH}?${searchParams.toString()}`;
+    return COUNTRY_PAGE_PATH + "?" + searchParams.toString();
 }
 
 /* Shows a small validation message under the search area */
@@ -84,20 +84,17 @@ function ensureWorldMap() {
         return;
     }
 
-
-    // We set the map bounds so user cannot go too far up or down.
-    // User can only move left and right (around the world).
-    // This helps to keep the map looking good and not broken.
-    const southWest = window.L.latLng(-85, -180); // Bottom left corner of the world
-    const northEast = window.L.latLng(85, 180);   // Top right corner of the world
-    const bounds = window.L.latLngBounds(southWest, northEast); // The area user can see
+    // Keep the map inside the visible world area.
+    const southWest = window.L.latLng(-85, -180);
+    const northEast = window.L.latLng(85, 180);
+    const bounds = window.L.latLngBounds(southWest, northEast);
 
     worldMap = window.L.map(elements.worldMapContainer, {
         zoomControl: true,
         minZoom: 2,
         worldCopyJump: true,
-        maxBounds: bounds, // This stops user from moving map out of the world
-        maxBoundsViscosity: 1.0 // 1.0 means user cannot drag outside at all
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0
     }).setView([20, 0], 2);
 
     window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -117,9 +114,11 @@ function getMarkerPalette(countryName) {
 function createCountryMarkerIcon(countryName, flagUrl) {
     const { start, end, ring } = getMarkerPalette(countryName);
     const hasFlag = Boolean(flagUrl);
-    const flagMarkup = hasFlag
-        ? `<span class="country-marker-flag"><img src="${flagUrl}" alt="${countryName} flag"></span>`
-        : "";
+    let flagMarkup = "";
+
+    if (hasFlag) {
+        flagMarkup = `<span class="country-marker-flag"><img src="${flagUrl}" alt="${countryName} flag"></span>`;
+    }
 
     return window.L.divIcon({
         className: "country-marker-icon",
@@ -148,9 +147,11 @@ function renderCountryMarkers(countries) {
 
     countries.forEach((country) => {
         const markerIcon = createCountryMarkerIcon(country.name, country.flagUrl);
-        const tooltipText = country.capital
-            ? `${country.name} • ${country.capital}`
-            : country.name;
+        let tooltipText = country.name;
+
+        if (country.capital) {
+            tooltipText = country.name + " • " + country.capital;
+        }
 
         window.L.marker([country.lat, country.lng], {
             icon: markerIcon,
@@ -162,7 +163,7 @@ function renderCountryMarkers(countries) {
     });
 
     window.setTimeout(() => worldMap.invalidateSize(), 0);
-    setMapFeedback(`Showing ${countries.length} capital markers. Click one to explore it.`);
+    setMapFeedback("Showing " + countries.length + " capital markers. Click one to explore it.");
 }
 
 /* Connects the search input and button to the same redirect logic */
@@ -183,8 +184,6 @@ function bindSearchControls() {
     });
 }
 
-bindSearchControls();
-
 async function loadWorldMap() {
     if (!elements.worldMapContainer) {
         return;
@@ -194,7 +193,7 @@ async function loadWorldMap() {
         const countries = await fetchCountriesForMap();
         renderCountryMarkers(countries);
     } catch {
-        setMapFeedback("Countries could not be loaded right now.");
+        setMapFeedback("The map is unavailable right now.");
     }
 }
 

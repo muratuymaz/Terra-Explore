@@ -10,7 +10,11 @@ export function formatNumber(value) {
 
 /* Joins list values into a readable string */
 export function formatList(values, fallbackText = "Unknown") {
-    return values.length ? values.join(", ") : fallbackText;
+    if (!values.length) {
+        return fallbackText;
+    }
+
+    return values.join(", ");
 }
 
 /* Formats currency objects returned by the API */
@@ -22,9 +26,13 @@ export function formatCurrencies(currencies) {
     return currencies
         .map((currency) => {
             const currencyName = currency.name ?? "Unknown currency";
-            const currencySymbol = currency.symbol ? ` (${currency.symbol})` : "";
+            let currencySymbol = "";
 
-            return `${currencyName}${currencySymbol}`;
+            if (currency.symbol) {
+                currencySymbol = " (" + currency.symbol + ")";
+            }
+
+            return currencyName + currencySymbol;
         })
         .join(", ");
 }
@@ -49,7 +57,7 @@ export function normalizeText(value) {
 }
 
 /* Removes generic tokens from a normalized label and falls back to the full normalized text */
-export function buildCanonicalText(value, ignoredTokens = new Set()) {
+export function cleanPlaceName(value, ignoredTokens = new Set()) {
     const normalizedValue = normalizeText(value);
     const meaningfulTokens = normalizedValue
         .split(" ")
@@ -59,7 +67,7 @@ export function buildCanonicalText(value, ignoredTokens = new Set()) {
 }
 
 /* Checks whether a value is effectively a duplicate of an existing normalized value */
-export function hasSimilarValue(existingValues, candidateValue) {
+export function isSimilarName(existingValues, candidateValue) {
     return existingValues.some((existingValue) => (
         existingValue === candidateValue
         || existingValue.includes(candidateValue)
@@ -68,7 +76,7 @@ export function hasSimilarValue(existingValues, candidateValue) {
 }
 
 /* Builds a stable cache entry key from a user-facing name */
-export function buildCacheEntryKey(value) {
+export function makeCacheKey(value) {
     return value.trim().toLowerCase();
 }
 
@@ -77,7 +85,11 @@ export function readStorageObject(storageKey) {
     try {
         const storedValue = localStorage.getItem(storageKey);
 
-        return storedValue ? JSON.parse(storedValue) : {};
+        if (!storedValue) {
+            return {};
+        }
+
+        return JSON.parse(storedValue);
     } catch {
         return {};
     }
@@ -127,7 +139,7 @@ export function setCacheValue(cacheConfig, entryKey, data) {
 /* Loads JSONP data for endpoints that do not allow cross-origin fetch requests */
 export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
     return new Promise((resolve, reject) => {
-        const resolvedCallbackName = callbackName || `jsonpCallback${Date.now()}`;
+        const resolvedCallbackName = callbackName || ("jsonpCallback" + Date.now());
         const script = document.createElement("script");
         let isSettled = false;
 
@@ -144,7 +156,7 @@ export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
 
             isSettled = true;
             finalize();
-            reject(new Error(`JSONP request timed out: ${script.src}`));
+            reject(new Error("JSONP request timed out: " + script.src));
         }, 10000);
 
         const handleJsonpResponse = (data) => {
@@ -169,14 +181,19 @@ export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
             isSettled = true;
             window.clearTimeout(timeoutId);
             finalize();
-            reject(new Error(`JSONP request failed: ${script.src}`));
+            reject(new Error("JSONP request failed: " + script.src));
         };
 
         script.async = true;
         script.type = "text/javascript";
         script.charset = "UTF-8";
-        const separator = url.includes("?") ? "&" : "?";
-        script.src = `${url}${separator}${callbackParam}=${encodeURIComponent(resolvedCallbackName)}`;
+        let separator = "?";
+
+        if (url.includes("?")) {
+            separator = "&";
+        }
+
+        script.src = url + separator + callbackParam + "=" + encodeURIComponent(resolvedCallbackName);
         document.head.append(script);
     });
 }
