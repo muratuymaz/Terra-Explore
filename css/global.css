@@ -136,6 +136,11 @@ input {
     transform: scale(1.1);
 }
 
+.menu-logout-button {
+    font-size: 16px;
+    font-weight: bold;
+}
+
 /* Rules applied only to screens 768px wide or smaller (Tablets and Phones) */
 @media (max-width: 768px) {
     .menu {

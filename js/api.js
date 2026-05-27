@@ -115,20 +115,18 @@ async function fetchTopCitiesByCountry(countryCode) {
         username: geoNamesUsername
     });
 
-    let cities = [];
-
     try {
-        cities = await fetchGeoNamesCities(geoNamesEndpoint, searchParams, 0);
+        const cities = await fetchGeoNamesCities(geoNamesEndpoint, searchParams, 0);
+
+        if (!cities.length) {
+            throw new Error("No cities found.");
+        }
+
+        setCacheValue(geoNamesCache, cacheKey, cities);
+        return cities;
     } catch {
         throw new Error("Cities could not be loaded right now.");
     }
-
-    if (cities.length) {
-        setCacheValue(geoNamesCache, cacheKey, cities);
-        return cities;
-    }
-
-    throw new Error("Cities could not be loaded right now.");
 }
 
 /* Fetches popular place candidates around a city center */
@@ -176,24 +174,17 @@ export async function fetchCountriesForMap() {
     return countries
         .filter((country) => country.name?.common)
         .map((country) => {
-            let capitalCoordinates = [];
-            let fallbackCoordinates = [];
-
-            if (Array.isArray(country.capitalInfo?.latlng)) {
-                capitalCoordinates = country.capitalInfo.latlng;
-            }
+            let coordinates = [];
 
             if (Array.isArray(country.latlng)) {
-                fallbackCoordinates = country.latlng;
+                coordinates = country.latlng;
             }
 
-            let finalCoordinates = fallbackCoordinates;
-
-            if (capitalCoordinates.length >= 2) {
-                finalCoordinates = capitalCoordinates;
+            if (Array.isArray(country.capitalInfo?.latlng) && country.capitalInfo.latlng.length >= 2) {
+                coordinates = country.capitalInfo.latlng;
             }
 
-            const [capitalLat, capitalLng] = finalCoordinates;
+            const [capitalLat, capitalLng] = coordinates;
 
             return {
                 name: country.name.common,

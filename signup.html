@@ -19,7 +19,8 @@
             <a href="#">Popular Places</a>
         </nav>
 
-        <div class="menu-actions">
+        <!-- Header action area can switch to profile/logout after sign up -->
+        <div class="menu-actions" data-auth-menu>
             <a class="button-light" href="index.html">Back Home</a>
         </div>
     </header>
@@ -35,9 +36,10 @@
         <!-- Two-column layout: form -->
         <section class="signup-grid">
             <!-- Sign up form card -->
-            <form class="signup-card" aria-label="Sign up form">
+            <form id="signupForm" class="signup-card" aria-label="Sign up form">
                 <h3>Create Your Account</h3>
 
+                <!-- Basic profile fields for the demo sign up flow -->
                 <label class="field">
                     <span>Full Name</span>
                     <input type="text" name="fullName" placeholder="e.g., Elif Demir" autocomplete="name" required>
@@ -59,6 +61,8 @@
                 </label>
 
                 <button type="submit" class="button">Create Account</button>
+                <!-- Short feedback message shown after a successful submit -->
+                <p id="signupFeedback" class="signup-feedback" hidden aria-live="polite"></p>
                 <p class="form-note">By signing up, you agree to receive travel inspiration from Terra Explore.</p>
             </form>
         </section>
@@ -68,5 +72,7 @@
     <footer class="footer">
         <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
     </footer>
+    <!-- Account page behavior -->
+    <script type="module" src="js/account.js"></script>
 </body>
 </html>

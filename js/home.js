@@ -1,3 +1,4 @@
+import { initHeaderAuth } from "./auth.js";
 import { fetchCountriesForMap } from "./api.js";
 
 const COUNTRY_PAGE_PATH = "country.html";
@@ -5,12 +6,17 @@ const COUNTRY_PAGE_PATH = "country.html";
 const elements = {
     searchInput: document.querySelector("#searchInput"),
     searchButton: document.querySelector("#searchBtn"),
+    searchSuggestions: document.querySelector("#searchSuggestions"),
     errorMessage: document.querySelector("#errorMessage"),
     worldMapContainer: document.querySelector("#worldMapContainer"),
     mapFeedback: document.querySelector("#mapFeedback")
 };
+const MAX_SUGGESTIONS = 6;
 let worldMap = null;
 let worldMarkersLayer = null;
+let countryNames = [];
+let visibleSuggestions = [];
+let activeSuggestionIndex = -1;
 const markerPalette = [
     { start: "#67a86f", end: "#3c7551", ring: "rgba(78, 131, 95, 0.26)" },
     { start: "#d98a54", end: "#b35d39", ring: "rgba(201, 126, 71, 0.24)" },
@@ -56,6 +62,104 @@ function setMapFeedback(message = "") {
     if (elements.mapFeedback) {
         elements.mapFeedback.textContent = message;
     }
+}
+
+function hideSuggestions() {
+    visibleSuggestions = [];
+    activeSuggestionIndex = -1;
+
+    if (!elements.searchSuggestions || !elements.searchInput) {
+        return;
+    }
+
+    elements.searchSuggestions.innerHTML = "";
+    elements.searchSuggestions.hidden = true;
+    elements.searchInput.setAttribute("aria-expanded", "false");
+}
+
+function selectSuggestion(countryName) {
+    if (!elements.searchInput) {
+        return;
+    }
+
+    elements.searchInput.value = countryName;
+    clearError();
+    hideSuggestions();
+}
+
+function renderSuggestions(suggestions) {
+    visibleSuggestions = suggestions;
+    activeSuggestionIndex = -1;
+
+    if (!elements.searchSuggestions || !elements.searchInput) {
+        return;
+    }
+
+    if (!suggestions.length) {
+        hideSuggestions();
+        return;
+    }
+
+    elements.searchSuggestions.innerHTML = "";
+
+    suggestions.forEach((countryName, index) => {
+        const suggestionButton = document.createElement("button");
+
+        suggestionButton.type = "button";
+        suggestionButton.className = "suggestion-item";
+        suggestionButton.textContent = countryName;
+        suggestionButton.setAttribute("data-index", String(index));
+        suggestionButton.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            selectSuggestion(countryName);
+        });
+        suggestionButton.addEventListener("click", () => {
+            redirectToCountry(countryName);
+        });
+        elements.searchSuggestions.append(suggestionButton);
+    });
+
+    elements.searchSuggestions.hidden = false;
+    elements.searchInput.setAttribute("aria-expanded", "true");
+}
+
+function updateSuggestionHighlight() {
+    if (!elements.searchSuggestions) {
+        return;
+    }
+
+    const suggestionItems = elements.searchSuggestions.querySelectorAll(".suggestion-item");
+
+    suggestionItems.forEach((item, index) => {
+        item.classList.toggle("is-active", index === activeSuggestionIndex);
+    });
+}
+
+function updateSuggestions() {
+    const inputValue = normalizeCountryName(elements.searchInput?.value ?? "").toLowerCase();
+
+    if (!inputValue || !countryNames.length) {
+        hideSuggestions();
+        return;
+    }
+
+    const startsWithMatches = [];
+    const includesMatches = [];
+
+    countryNames.forEach((countryName) => {
+        const normalizedName = countryName.toLowerCase();
+
+        if (normalizedName.startsWith(inputValue)) {
+            startsWithMatches.push(countryName);
+            return;
+        }
+
+        if (normalizedName.includes(inputValue)) {
+            includesMatches.push(countryName);
+        }
+    });
+
+    renderSuggestions(startsWithMatches.concat(includesMatches).slice(0, MAX_SUGGESTIONS));
 }
 
 /* Sends the user to the country page if the input is usable */
@@ -171,16 +275,56 @@ function bindSearchControls() {
     elements.searchButton?.addEventListener("click", handleSearch);
 
     elements.searchInput?.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" && visibleSuggestions.length) {
+            event.preventDefault();
+            activeSuggestionIndex = (activeSuggestionIndex + 1) % visibleSuggestions.length;
+            updateSuggestionHighlight();
+            return;
+        }
+
+        if (event.key === "ArrowUp" && visibleSuggestions.length) {
+            event.preventDefault();
+
+            if (activeSuggestionIndex <= 0) {
+                activeSuggestionIndex = visibleSuggestions.length - 1;
+            } else {
+                activeSuggestionIndex -= 1;
+            }
+
+            updateSuggestionHighlight();
+            return;
+        }
+
+        if (event.key === "Escape") {
+            hideSuggestions();
+            return;
+        }
+
         if (event.key !== "Enter") {
             return;
         }
 
         event.preventDefault();
+
+        if (activeSuggestionIndex >= 0 && visibleSuggestions[activeSuggestionIndex]) {
+            redirectToCountry(visibleSuggestions[activeSuggestionIndex]);
+            return;
+        }
+
         handleSearch();
     });
 
     elements.searchInput?.addEventListener("input", () => {
         clearError();
+        updateSuggestions();
+    });
+
+    elements.searchInput?.addEventListener("blur", () => {
+        window.setTimeout(hideSuggestions, 100);
+    });
+
+    elements.searchInput?.addEventListener("focus", () => {
+        updateSuggestions();
     });
 }
 
@@ -191,11 +335,13 @@ async function loadWorldMap() {
 
     try {
         const countries = await fetchCountriesForMap();
+        countryNames = [...new Set(countries.map((country) => country.name))].sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
         renderCountryMarkers(countries);
     } catch {
         setMapFeedback("The map is unavailable right now.");
     }
 }
 
+initHeaderAuth();
 bindSearchControls();
 loadWorldMap();

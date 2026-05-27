@@ -1,3 +1,4 @@
+import { initHeaderAuth } from "./auth.js";
 import {
     fetchCountryBackgroundImage,
     fetchCountryByName,
@@ -249,5 +250,6 @@ async function loadCountryPage() {
     }
 }
 
+initHeaderAuth();
 bindPopularPlacesButton();
 loadCountryPage();
