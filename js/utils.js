@@ -185,8 +185,6 @@ export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
         };
 
         script.async = true;
-        script.type = "text/javascript";
-        script.charset = "UTF-8";
         let separator = "?";
 
         if (url.includes("?")) {

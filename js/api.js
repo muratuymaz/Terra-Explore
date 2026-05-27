@@ -89,6 +89,10 @@ function mapCountryResponse(country) {
         flagUrl: country.flags?.svg || country.flags?.png || "",
         capital: country.capital?.[0] ?? "Unknown",
         population: country.population ?? 0,
+        lat: Number(country.latlng?.[0]),
+        lng: Number(country.latlng?.[1]),
+        capitalLat: Number(country.capitalInfo?.latlng?.[0]),
+        capitalLng: Number(country.capitalInfo?.latlng?.[1]),
         languages,
         currencies
     };
@@ -321,7 +325,9 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
                     id: place.xid,
                     name: place.name,
                     kinds: place.kinds ?? "",
-                    sourceCity: city.name
+                    sourceCity: city.name,
+                    lat: Number(place.point?.lat),
+                    lng: Number(place.point?.lon)
                 });
                 addedPlaceCount += 1;
             }

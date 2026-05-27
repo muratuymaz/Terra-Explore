@@ -1,5 +1,10 @@
 import { getCurrentUser, initHeaderAuth, saveCurrentUser } from "./auth.js";
-import { getQueryParam } from "./utils.js";
+import {
+    getFavoriteCountries,
+    getFavoritePlaces,
+    getVisitedCountries,
+    getWantToVisitCountries
+} from "./travel-data.js";
 
 const signupElements = {
     form: document.querySelector("#signupForm"),
@@ -12,18 +17,12 @@ const profileElements = {
     subtitle: document.querySelector("#profileSubtitle"),
     name: document.querySelector("#profileName"),
     email: document.querySelector("#profileEmail"),
-    country: document.querySelector("#profileCountry")
+    country: document.querySelector("#profileCountry"),
+    favoriteCountries: document.querySelector("#favoriteCountriesList"),
+    favoritePlaces: document.querySelector("#favoritePlacesList"),
+    visitedCountries: document.querySelector("#visitedCountriesList"),
+    wantToVisitCountries: document.querySelector("#wantToVisitCountriesList")
 };
-
-/* Shows the short success message under the sign up form */
-function showSignupFeedback(message) {
-    if (!signupElements.feedback) {
-        return;
-    }
-
-    signupElements.feedback.textContent = message;
-    signupElements.feedback.hidden = false;
-}
 
 /* Validates the demo form, stores the user, and redirects to the profile page */
 function handleSignupSubmit(event) {
@@ -41,7 +40,11 @@ function handleSignupSubmit(event) {
     };
 
     saveCurrentUser(user);
-    showSignupFeedback("Account created successfully! Redirecting to your profile...");
+
+    if (signupElements.feedback) {
+        signupElements.feedback.textContent = "Account created successfully! Redirecting to your profile...";
+        signupElements.feedback.hidden = false;
+    }
 
     if (signupElements.submitButton) {
         signupElements.submitButton.disabled = true;
@@ -52,20 +55,12 @@ function handleSignupSubmit(event) {
     }, 900);
 }
 
-/* Fills the profile page with saved user data or fallback query values */
+/* Fills the profile page with saved user data */
 function fillProfile() {
-    let name = getQueryParam("name");
-    let email = getQueryParam("email");
-    let country = getQueryParam("country");
     const savedUser = getCurrentUser();
-
-    if (savedUser) {
-        name = savedUser.name || name;
-        email = savedUser.email || email;
-        country = savedUser.country || country;
-    } else if (name || email || country) {
-        saveCurrentUser({ name, email, country });
-    }
+    const name = savedUser?.name || "";
+    const email = savedUser?.email || "";
+    const country = savedUser?.country || "";
 
     if (name) {
         profileElements.greeting.textContent = "Welcome, " + name;
@@ -81,14 +76,65 @@ function fillProfile() {
     }
 
     if (name || country) {
-        let placeText = "";
-
-        if (country) {
-            placeText = " from " + country;
-        }
+        const placeText = country ? " from " + country : "";
 
         profileElements.subtitle.textContent = "Your TerraExplore profile is ready" + placeText + ". Start exploring your next destination.";
     }
+}
+
+function renderCountryTags(container, countries, emptyText) {
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    if (!countries.length) {
+        container.innerHTML = '<p class="profile-empty">' + emptyText + "</p>";
+        return;
+    }
+
+    countries.forEach((country) => {
+        const countryLink = document.createElement("a");
+
+        countryLink.className = "profile-tag";
+        countryLink.href = "country.html?name=" + encodeURIComponent(country);
+        countryLink.textContent = country;
+        container.append(countryLink);
+    });
+}
+
+function renderFavoritePlaces() {
+    if (!profileElements.favoritePlaces) {
+        return;
+    }
+
+    const favoritePlaces = getFavoritePlaces();
+    profileElements.favoritePlaces.innerHTML = "";
+
+    if (!favoritePlaces.length) {
+        profileElements.favoritePlaces.innerHTML = '<p class="profile-empty">No favorite places yet.</p>';
+        return;
+    }
+
+    favoritePlaces.forEach((place) => {
+        const placeItem = document.createElement("article");
+        const title = document.createElement("strong");
+        const details = document.createElement("span");
+
+        placeItem.className = "profile-place-item";
+        title.textContent = place.name;
+        details.textContent = [place.sourceCity, place.country].filter(Boolean).join(", ");
+        placeItem.append(title, details);
+        profileElements.favoritePlaces.append(placeItem);
+    });
+}
+
+function fillTravelLists() {
+    renderCountryTags(profileElements.favoriteCountries, getFavoriteCountries(), "No favorite countries yet.");
+    renderCountryTags(profileElements.visitedCountries, getVisitedCountries(), "No visited countries yet.");
+    renderCountryTags(profileElements.wantToVisitCountries, getWantToVisitCountries(), "No countries in your wishlist yet.");
+    renderFavoritePlaces();
 }
 
 initHeaderAuth();
@@ -96,4 +142,5 @@ signupElements.form?.addEventListener("submit", handleSignupSubmit);
 
 if (profileElements.greeting) {
     fillProfile();
+    fillTravelLists();
 }

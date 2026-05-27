@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraExplore | Compare Countries</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/compare-countries.css">
+</head>
+<body>
+    <!-- Comparison page header -->
+    <header class="menu">
+        <div class="logo">
+            <a href="index.html"><h1>Terra Explore</h1></a>
+        </div>
+
+        <nav class="menu-links">
+            <a href="#">About Us</a>
+            <a href="compare-countries.html">Compare Countries</a>
+        </nav>
+
+        <div class="menu-actions" data-auth-menu>
+            <a class="button-light" href="signup.html">Sign Up</a>
+        </div>
+    </header>
+
+    <main class="compare-page">
+        <!-- Intro area for country comparison -->
+        <section class="compare-hero">
+            <p class="compare-kicker">Compare countries</p>
+            <h2>See Key Country Facts Side by Side</h2>
+            <p>Choose two countries to compare their capital, population, languages, and currencies in one clean view.</p>
+        </section>
+
+        <section class="compare-grid">
+            <article class="compare-card">
+                <div class="compare-header">
+                    <h3>Compare Countries</h3>
+                    <p>See key facts side by side.</p>
+                </div>
+                <div class="compare-form">
+                    <input type="text" id="compareCountryOne" placeholder="First country" list="countryOptions">
+                    <input type="text" id="compareCountryTwo" placeholder="Second country" list="countryOptions">
+                    <button id="compareBtn" type="button" class="button">Compare</button>
+                </div>
+                <p id="compareFeedback" class="compare-feedback" hidden></p>
+                <div id="compareResult" class="compare-result" hidden></div>
+                <datalist id="countryOptions"></datalist>
+            </article>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
+    </footer>
+    <!-- Country comparison page behavior -->
+    <script type="module" src="js/compare-countries.js"></script>
+</body>
+</html>

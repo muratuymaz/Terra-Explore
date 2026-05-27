@@ -1,0 +1,128 @@
+/* Centers the comparison page content and keeps it comfortably narrow */
+.compare-page {
+    max-width: 1100px;
+    margin: 50px auto 80px;
+    padding: 0 20px;
+}
+
+/* Intro text block at the top of the comparison page */
+.compare-hero {
+    text-align: center;
+    margin-bottom: 34px;
+}
+
+/* Small uppercase label above the main heading */
+.compare-kicker {
+    color: var(--brown);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+/* Main page heading for the comparison view */
+.compare-hero h2 {
+    font-size: 38px;
+    margin-bottom: 12px;
+}
+
+/* Supporting paragraph under the heading */
+.compare-hero p:last-child {
+    color: rgba(46, 50, 48, 0.82);
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+/* Layout for the comparison card area */
+.compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* Main comparison card container */
+.compare-card {
+    padding: 24px;
+    border-radius: 18px;
+    text-align: left;
+    background: linear-gradient(145deg, rgba(247, 242, 233, 0.98), rgba(238, 231, 220, 0.94));
+    border: 1px solid rgba(108, 80, 39, 0.12);
+    box-shadow: 0 18px 40px rgba(63, 53, 40, 0.08);
+}
+
+/* Card heading styles */
+.compare-card h3,
+.compare-header h3 {
+    color: var(--green);
+    margin-bottom: 6px;
+}
+
+/* Short descriptive text inside the card header */
+.compare-header p {
+    color: rgba(108, 80, 39, 0.82);
+    margin-bottom: 18px;
+}
+
+/* Two-column input layout for choosing countries */
+.compare-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+/* Full-width compare button inside the form */
+.compare-form .button {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+/* Helper feedback text for loading or validation states */
+.compare-feedback {
+    margin-top: 14px;
+    color: var(--brown);
+}
+
+/* Two-column result grid shown after a successful comparison */
+.compare-result {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+/* Each country's fact column inside the comparison result */
+.compare-column {
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.48);
+    border: 1px solid rgba(108, 80, 39, 0.12);
+}
+
+/* Country name heading inside one result column */
+.compare-column h4 {
+    color: var(--green);
+    margin-bottom: 12px;
+}
+
+/* Individual fact row styling */
+.compare-stat {
+    margin-bottom: 10px;
+    color: var(--brown);
+}
+
+/* Highlights the stat labels in each comparison row */
+.compare-stat strong {
+    color: var(--green);
+}
+
+/* Stacks the form and results on smaller screens */
+@media (max-width: 768px) {
+    .compare-hero h2 {
+        font-size: 30px;
+    }
+
+    .compare-form,
+    .compare-result {
+        grid-template-columns: 1fr;
+    }
+}

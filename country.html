@@ -6,6 +6,12 @@
     <title>TerraExplore | Country Details</title>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/country.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
 </head>
 <body id="countryBody">
     <!-- Country page -->
@@ -16,7 +22,7 @@
         
         <nav class="menu-links">
             <a href="#">About Us</a>
-            <a href="#">Popular Places</a>
+            <a href="compare-countries.html">Compare Countries</a>
         </nav>
 
         <div class="menu-actions" data-auth-menu>
@@ -38,7 +44,20 @@
                     <li><strong>Language(s):</strong> <span id="languageText">-</span></li>
                     <li><strong>Currency:</strong> <span id="currencyText">-</span></li>
                 </ul>
+                <div class="country-actions">
+                    <button id="favoriteCountryBtn" type="button" class="button-light">Add to Favorites</button>
+                    <button id="visitedCountryBtn" type="button" class="button-light">Mark as Visited</button>
+                    <button id="wantToVisitCountryBtn" type="button" class="button-light">Want to Visit</button>
+                </div>
             </div>
+        </section>
+
+        <section class="country-map-area">
+            <div class="country-map-header">
+                <h3>Explore This Country on the Map</h3>
+                <p id="countryMapFeedback" class="country-map-feedback">Loading map...</p>
+            </div>
+            <div id="countryMap" aria-label="Country detail map"></div>
         </section>
 
         <section class="places-area">
@@ -51,6 +70,11 @@
         </section>
     </main>
 
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
     <script type="module" src="js/country.js"></script>
 
     <footer class="footer">

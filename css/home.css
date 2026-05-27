@@ -63,6 +63,49 @@
     color: var(--green);
 }
 
+.recent-searches-panel {
+    max-width: 760px;
+    margin: 42px auto 0;
+    padding: 24px;
+    border-radius: 18px;
+    text-align: left;
+    background: linear-gradient(145deg, rgba(247, 242, 233, 0.98), rgba(238, 231, 220, 0.94));
+    border: 1px solid rgba(108, 80, 39, 0.12);
+    box-shadow: 0 18px 40px rgba(63, 53, 40, 0.08);
+}
+
+.recent-searches-header h3 {
+    color: var(--green);
+    margin-bottom: 6px;
+}
+
+.recent-searches-header p {
+    color: rgba(108, 80, 39, 0.82);
+    margin-bottom: 18px;
+}
+
+.recent-searches-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.recent-search-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(77, 132, 98, 0.12);
+    color: var(--green);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.empty-state-text {
+    color: rgba(108, 80, 39, 0.78);
+    font-size: 15px;
+}
+
 /* Map */
 .map-area {
     margin-top: 50px;
@@ -115,11 +158,22 @@
 }
 
 .map-legend-dot {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    border-radius: 999px 999px 999px 2px;
+    transform: rotate(-45deg);
+    background: linear-gradient(145deg, #67a86f, #3c7551);
+    box-shadow: 0 0 0 4px rgba(78, 131, 95, 0.14);
+    position: relative;
+}
+
+.map-legend-dot::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
     border-radius: 999px;
-    background: linear-gradient(145deg, #67a86f, #d98a54, #6d94cb);
-    box-shadow: 0 0 0 4px rgba(109, 148, 203, 0.14);
+    background: rgba(250, 246, 240, 0.95);
 }
 
 .country-marker-icon {
@@ -214,6 +268,11 @@
     /* Reduce the inner padding of the map area to save precious screen space on mobile devices */
     .map-area {
         padding: 20px;
+    }
+
+    .compare-form,
+    .compare-result {
+        grid-template-columns: 1fr;
     }
 
     .map-header {

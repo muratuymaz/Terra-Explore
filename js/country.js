@@ -15,6 +15,15 @@ import {
     toTitleCase
 } from "./utils.js";
 import { CACHE_CONFIG, POPULAR_PLACES_CONFIG } from "./config.js";
+import {
+    getCountryTravelStatus,
+    isFavoriteCountry,
+    isFavoritePlace,
+    saveRecentCountry,
+    setCountryTravelStatus,
+    toggleFavoriteCountry,
+    toggleFavoritePlace
+} from "./travel-data.js";
 
 const elements = {
     pageBody: document.querySelector("#countryBody"),
@@ -24,6 +33,11 @@ const elements = {
     populationText: document.querySelector("#populationText"),
     languageText: document.querySelector("#languageText"),
     currencyText: document.querySelector("#currencyText"),
+    favoriteCountryButton: document.querySelector("#favoriteCountryBtn"),
+    visitedCountryButton: document.querySelector("#visitedCountryBtn"),
+    wantToVisitCountryButton: document.querySelector("#wantToVisitCountryBtn"),
+    countryMap: document.querySelector("#countryMap"),
+    countryMapFeedback: document.querySelector("#countryMapFeedback"),
     popularPlacesButton: document.querySelector("#popularPlacesBtn"),
     popularPlacesGrid: document.querySelector("#popularPlacesGrid"),
     popularPlacesFeedback: document.querySelector("#popularPlacesFeedback")
@@ -31,6 +45,9 @@ const elements = {
 
 let selectedCountry = null;
 let isPopularPlacesLoading = false;
+let countryMap = null;
+let baseMapLayer = null;
+let placesMapLayer = null;
 
 /* Formats OpenTripMap kinds into a cleaner card label */
 function getPlaceCategory(kindsText = "") {
@@ -69,6 +86,133 @@ function buildPlaceMapUrl(place) {
     return "https://www.google.com/maps/search/?" + searchParams.toString();
 }
 
+function updateCountryActionButtons() {
+    if (!selectedCountry) {
+        return;
+    }
+
+    const isCountryFavorite = isFavoriteCountry(selectedCountry.name);
+    const travelStatus = getCountryTravelStatus(selectedCountry.name);
+
+    if (elements.favoriteCountryButton) {
+        elements.favoriteCountryButton.textContent = isCountryFavorite ? "Remove Favorite" : "Add to Favorites";
+        elements.favoriteCountryButton.classList.toggle("is-active", isCountryFavorite);
+    }
+
+    if (elements.visitedCountryButton) {
+        elements.visitedCountryButton.classList.toggle("is-active", travelStatus === "visited");
+    }
+
+    if (elements.wantToVisitCountryButton) {
+        elements.wantToVisitCountryButton.classList.toggle("is-active", travelStatus === "want");
+    }
+}
+
+function setCountryMapFeedback(message = "") {
+    if (!elements.countryMapFeedback) {
+        return;
+    }
+
+    elements.countryMapFeedback.textContent = message;
+}
+
+function ensureCountryMap() {
+    if (countryMap || !elements.countryMap || !window.L) {
+        return;
+    }
+
+    countryMap = window.L.map(elements.countryMap, {
+        zoomControl: true,
+        minZoom: 2
+    }).setView([20, 0], 2);
+
+    window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(countryMap);
+
+    baseMapLayer = window.L.layerGroup().addTo(countryMap);
+    placesMapLayer = window.L.layerGroup().addTo(countryMap);
+}
+
+function renderCountryMap(country) {
+    ensureCountryMap();
+
+    if (!countryMap || !baseMapLayer) {
+        return setCountryMapFeedback("Map could not be loaded.");
+    }
+
+    baseMapLayer.clearLayers();
+
+    let markerLat = country.lat;
+    let markerLng = country.lng;
+    let markerLabel = country.name;
+
+    if (Number.isFinite(country.capitalLat) && Number.isFinite(country.capitalLng)) {
+        markerLat = country.capitalLat;
+        markerLng = country.capitalLng;
+        markerLabel = country.capital + ", " + country.name;
+    }
+
+    if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) {
+        return setCountryMapFeedback("Map location is unavailable for this country.");
+    }
+
+    window.L.marker([markerLat, markerLng])
+        .bindPopup(markerLabel)
+        .addTo(baseMapLayer);
+
+    window.L.circle([markerLat, markerLng], {
+        radius: 70000,
+        color: "#4e835f",
+        weight: 2,
+        fillColor: "#67a86f",
+        fillOpacity: 0.18
+    }).addTo(baseMapLayer);
+
+    countryMap.setView([markerLat, markerLng], 5);
+    window.setTimeout(() => countryMap.invalidateSize(), 0);
+    setCountryMapFeedback("Showing " + markerLabel + " on the map.");
+}
+
+function renderPopularPlaceMarkers(places) {
+    ensureCountryMap();
+
+    if (!countryMap || !placesMapLayer) {
+        return;
+    }
+
+    placesMapLayer.clearLayers();
+
+    const placesWithCoordinates = places.filter(
+        (place) => Number.isFinite(place.lat) && Number.isFinite(place.lng)
+    );
+
+    if (!placesWithCoordinates.length) {
+        return;
+    }
+
+    placesWithCoordinates.forEach((place) => {
+        window.L.circleMarker([place.lat, place.lng], {
+            radius: 6,
+            color: "#8a6740",
+            weight: 2,
+            fillColor: "#f0d2a7",
+            fillOpacity: 0.95
+        })
+            .bindPopup("<strong>" + place.name + "</strong><br>" + (place.sourceCity || selectedCountry?.name || ""))
+            .addTo(placesMapLayer);
+    });
+
+    const bounds = window.L.latLngBounds(placesWithCoordinates.map((place) => [place.lat, place.lng]));
+
+    if (bounds.isValid()) {
+        countryMap.fitBounds(bounds.pad(0.18));
+    }
+
+    setCountryMapFeedback("Showing the selected country's map and popular places.");
+}
+
 /* Renders the popular places list as simple cards */
 function renderPopularPlaces(places) {
     if (!elements.popularPlacesGrid) {
@@ -78,31 +222,47 @@ function renderPopularPlaces(places) {
     elements.popularPlacesGrid.innerHTML = "";
 
     places.forEach((place) => {
-        const placeLink = document.createElement("a");
         const placeCard = document.createElement("article");
+        const placeHead = document.createElement("div");
         const title = document.createElement("h3");
+        const favoriteButton = document.createElement("button");
         const category = document.createElement("p");
         const location = document.createElement("p");
-        const action = document.createElement("p");
+        const buttonsRow = document.createElement("div");
+        const mapAction = document.createElement("a");
 
-        placeLink.className = "place-card-link";
-        placeLink.href = buildPlaceMapUrl(place);
-        placeLink.target = "_blank";
-        placeLink.rel = "noopener noreferrer";
         placeCard.className = "place-card";
+        placeHead.className = "place-card-head";
         title.textContent = place.name;
+        favoriteButton.type = "button";
+        favoriteButton.className = "place-favorite-button";
+        favoriteButton.textContent = isFavoritePlace(place, selectedCountry?.name || "") ? "★" : "☆";
+        favoriteButton.setAttribute("aria-label", "Toggle favorite place");
+        favoriteButton.classList.toggle("is-active", isFavoritePlace(place, selectedCountry?.name || ""));
         category.textContent = getPlaceCategory(place.kinds);
         location.textContent = "Location details not available";
 
         if (place.sourceCity) {
             location.textContent = place.sourceCity;
         }
-        action.textContent = "Open in Google Maps";
-        action.className = "place-card-action";
+        buttonsRow.className = "place-card-buttons";
+        mapAction.href = buildPlaceMapUrl(place);
+        mapAction.target = "_blank";
+        mapAction.rel = "noopener noreferrer";
+        mapAction.textContent = "Open in Google Maps";
+        mapAction.className = "place-card-action";
 
-        placeCard.append(title, category, location, action);
-        placeLink.append(placeCard);
-        elements.popularPlacesGrid.append(placeLink);
+        favoriteButton.addEventListener("click", () => {
+            const isNowFavorite = toggleFavoritePlace(place, selectedCountry?.name || "");
+
+            favoriteButton.textContent = isNowFavorite ? "★" : "☆";
+            favoriteButton.classList.toggle("is-active", isNowFavorite);
+        });
+
+        placeHead.append(title, favoriteButton);
+        buttonsRow.append(mapAction);
+        placeCard.append(placeHead, category, location, buttonsRow);
+        elements.popularPlacesGrid.append(placeCard);
     });
 }
 
@@ -138,8 +298,10 @@ function renderCountryDetails(country) {
         elements.countryFlag.hidden = false;
     }
 
+    renderCountryMap(country);
     setPopularPlacesLoadingState(false);
     setPopularPlacesFeedback();
+    updateCountryActionButtons();
 }
 
 /* Applies the fetched background image if one is available */
@@ -170,6 +332,8 @@ function showPageError(message) {
     elements.popularPlacesButton?.setAttribute("disabled", "true");
     setPopularPlacesFeedback(message);
     elements.popularPlacesGrid.innerHTML = "";
+    placesMapLayer?.clearLayers();
+    setCountryMapFeedback(message);
 }
 
 /* Loads and renders the country's popular places on demand */
@@ -183,7 +347,9 @@ async function handlePopularPlacesRequest() {
 
     if (cachedPlaces) {
         setPopularPlacesFeedback();
-        return renderPopularPlaces(cachedPlaces);
+        renderPopularPlaces(cachedPlaces);
+        renderPopularPlaceMarkers(cachedPlaces);
+        return;
     }
 
     try {
@@ -200,6 +366,7 @@ async function handlePopularPlacesRequest() {
         setCacheValue(CACHE_CONFIG.popularPlaces, cacheKey, places);
         setPopularPlacesFeedback();
         renderPopularPlaces(places);
+        renderPopularPlaceMarkers(places);
     } catch (error) {
         elements.popularPlacesGrid.innerHTML = "";
         let feedbackMessage = "Popular places could not be loaded.";
@@ -219,6 +386,41 @@ function bindPopularPlacesButton() {
     elements.popularPlacesButton?.addEventListener("click", handlePopularPlacesRequest);
 }
 
+function bindCountryActionButtons() {
+    elements.favoriteCountryButton?.addEventListener("click", () => {
+        if (!selectedCountry) {
+            return;
+        }
+
+        toggleFavoriteCountry(selectedCountry.name);
+        updateCountryActionButtons();
+    });
+
+    elements.visitedCountryButton?.addEventListener("click", () => {
+        if (!selectedCountry) {
+            return;
+        }
+
+        const travelStatus = getCountryTravelStatus(selectedCountry.name);
+        const nextStatus = travelStatus === "visited" ? "" : "visited";
+
+        setCountryTravelStatus(selectedCountry.name, nextStatus);
+        updateCountryActionButtons();
+    });
+
+    elements.wantToVisitCountryButton?.addEventListener("click", () => {
+        if (!selectedCountry) {
+            return;
+        }
+
+        const travelStatus = getCountryTravelStatus(selectedCountry.name);
+        const nextStatus = travelStatus === "want" ? "" : "want";
+
+        setCountryTravelStatus(selectedCountry.name, nextStatus);
+        updateCountryActionButtons();
+    });
+}
+
 /* Loads the country data and optional background image together */
 async function loadCountryPage() {
     const countryName = getQueryParam("name");
@@ -231,6 +433,7 @@ async function loadCountryPage() {
     try {
         const country = await fetchCountryByName(countryName);
         renderCountryDetails(country);
+        saveRecentCountry(country.name);
     } catch (error) {
         let errorMessage = "Something went wrong while loading the country.";
 
@@ -251,5 +454,6 @@ async function loadCountryPage() {
 }
 
 initHeaderAuth();
+bindCountryActionButtons();
 bindPopularPlacesButton();
 loadCountryPage();
