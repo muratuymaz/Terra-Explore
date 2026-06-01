@@ -49,6 +49,13 @@ let countryMap = null;
 let baseMapLayer = null;
 let placesMapLayer = null;
 
+function getCountryMapBounds() {
+    const southWest = window.L.latLng(-85, -180);
+    const northEast = window.L.latLng(85, 180);
+
+    return window.L.latLngBounds(southWest, northEast);
+}
+
 /* Formats OpenTripMap kinds into a cleaner card label */
 function getPlaceCategory(kindsText = "") {
     const category = kindsText
@@ -121,9 +128,14 @@ function ensureCountryMap() {
         return;
     }
 
+    const bounds = getCountryMapBounds();
+
     countryMap = window.L.map(elements.countryMap, {
         zoomControl: true,
-        minZoom: 2
+        minZoom: 2,
+        worldCopyJump: true,
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0
     }).setView([20, 0], 2);
 
     window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -172,6 +184,7 @@ function renderCountryMap(country) {
 
     countryMap.setView([markerLat, markerLng], 5);
     window.setTimeout(() => countryMap.invalidateSize(), 0);
+    window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 150);
     setCountryMapFeedback("Showing " + markerLabel + " on the map.");
 }
 
@@ -208,6 +221,7 @@ function renderPopularPlaceMarkers(places) {
 
     if (bounds.isValid()) {
         countryMap.fitBounds(bounds.pad(0.18));
+        window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 150);
     }
 
     setCountryMapFeedback("Showing the selected country's map and popular places.");
@@ -457,3 +471,9 @@ initHeaderAuth();
 bindCountryActionButtons();
 bindPopularPlacesButton();
 loadCountryPage();
+
+window.addEventListener("resize", () => {
+    if (countryMap) {
+        window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 0);
+    }
+});
