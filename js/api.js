@@ -140,7 +140,7 @@ function mapCountryResponse(country) {
 }
 
 /* Fetches the largest cities for the selected country */
-async function fetchTopCitiesByCountry(countryCode) {
+async function fetchTopCitiesByCountry(countryCode, limit = cityCount) {
     if (!geoNamesUsername) {
         throw new Error("City data is unavailable right now.");
     }
@@ -148,7 +148,9 @@ async function fetchTopCitiesByCountry(countryCode) {
     const cacheKey = makeCacheKey(countryCode);
     const cachedCities = getCacheValue(geoNamesCache, cacheKey);
 
-    if (cachedCities) return cachedCities;
+    if (cachedCities) {
+        return cachedCities.slice(0, limit);
+    }
 
     const searchParams = new URLSearchParams({
         country: countryCode.toUpperCase(),
@@ -168,10 +170,51 @@ async function fetchTopCitiesByCountry(countryCode) {
         }
 
         setCacheValue(geoNamesCache, cacheKey, cities);
-        return cities;
+        return cities.slice(0, limit);
     } catch {
         throw new Error("Cities could not be loaded right now.");
     }
+}
+
+const HISTORICAL_PLACE_KIND_TOKENS = new Set([
+    "archaeology",
+    "archaeological",
+    "historic",
+    "historical",
+    "heritage",
+    "castle",
+    "castles",
+    "fort",
+    "fortress",
+    "fortifications",
+    "ruins",
+    "palace",
+    "palaces",
+    "monument",
+    "monuments",
+    "memorial",
+    "memorials",
+    "museum",
+    "museums",
+    "church",
+    "churches",
+    "cathedral",
+    "cathedrals",
+    "mosque",
+    "mosques",
+    "temple",
+    "temples",
+    "synagogue",
+    "synagogues"
+]);
+
+function isHistoricalPlace(place) {
+    const kinds = String(place.kinds || "")
+        .split(",")
+        .map((kind) => kind.trim().toLowerCase())
+        .filter(Boolean);
+
+    return kinds.some((kind) => Array.from(HISTORICAL_PLACE_KIND_TOKENS).some((token) => kind.includes(token)));
 }
 
 /* Fetches popular place candidates around a city center */
@@ -187,6 +230,79 @@ async function fetchPopularPlacesNearCity(city) {
     });
 
     return fetchJson(API_BASE_URLS.openTripMap + "/radius?" + searchParams.toString());
+}
+
+/* Fetches the best matching historical places for the selected country */
+export async function fetchHistoricalPlacesByCountry(country, limit = 5) {
+    if (!openTripMapApiKey) {
+        throw new Error("Historical places are unavailable right now.");
+    }
+
+    let topCities = [];
+
+    try {
+        topCities = await fetchTopCitiesByCountry(country.countryCode, Math.max(limit, cityCount * 3));
+    } catch {
+        throw new Error("Historical places could not be loaded right now.");
+    }
+
+    if (!topCities.length) {
+        throw new Error("Historical places could not be found for this country.");
+    }
+
+    const seenPlaceIds = new Set();
+    const seenPlaceNamesByCity = new Map();
+    const historicalPlaces = [];
+
+    try {
+        for (const [cityIndex, city] of topCities.entries()) {
+            const cityPlaces = await fetchPopularPlacesNearCity(city);
+            const citySeenNames = seenPlaceNamesByCity.get(city.name) || [];
+            const rankedCityPlaces = cityPlaces
+                .filter((place) => {
+                    const kinds = (place.kinds || "").split(",");
+                    const placeName = (place.name || "").trim();
+
+                    return !seenPlaceIds.has(place.xid)
+                        && Boolean(placeName)
+                        && !kinds.some((kind) => excludedKinds.has(kind))
+                        && isHistoricalPlace(place);
+                })
+                .sort((firstPlace, secondPlace) => (secondPlace.rate || 0) - (firstPlace.rate || 0));
+            const cityLimit = cityResultDistribution[cityIndex] || 0;
+            let addedPlaceCount = 0;
+
+            for (const place of rankedCityPlaces) {
+                if (addedPlaceCount >= cityLimit || historicalPlaces.length >= limit) {
+                    break;
+                }
+
+                const normalizedPlaceName = cleanPlaceName(place.name || "", genericNameTokens);
+
+                if (!normalizedPlaceName || isSimilarName(citySeenNames, normalizedPlaceName)) {
+                    continue;
+                }
+
+                seenPlaceIds.add(place.xid);
+                citySeenNames.push(normalizedPlaceName);
+                seenPlaceNamesByCity.set(city.name, citySeenNames);
+                historicalPlaces.push({
+                    id: place.xid,
+                    name: place.name,
+                    kinds: place.kinds || "",
+                    sourceCity: city.name,
+                    lat: Number(place.point && place.point.lat),
+                    lng: Number(place.point && place.point.lon),
+                    rate: Number(place.rate) || 0
+                });
+                addedPlaceCount += 1;
+            }
+        }
+    } catch {
+        throw new Error("Historical places could not be loaded right now.");
+    }
+
+    return historicalPlaces;
 }
 
 /* Fetches one country by name from REST Countries */
