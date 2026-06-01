@@ -2,6 +2,11 @@
 
 Terra Explore is a static travel discovery web project built for the Web Technologies course at Kocaeli University. Users can search for countries, explore country details, see popular places, compare two countries, and keep a simple local profile with favorites and travel status.
 
+## Developers
+
+- Murat Uymaz
+- Ahmet Melih Çalış
+
 ## Features
 
 - Search countries by name with autocomplete
@@ -12,15 +17,6 @@ Terra Explore is a static travel discovery web project built for the Web Technol
 - Use demo `Sign Up`, `Login`, and `Profile` pages
 - Save recent searches, favorite countries, favorite places, and `Visited / Want to Visit` status with `localStorage`
 - See a rotating 3D globe on the home page
-
-## Pages
-
-- `index.html` – home page with search, globe, recent searches, and world map
-- `country.html` – country detail page with map and popular places
-- `compare-countries.html` – country comparison page
-- `signup.html` – demo sign up page
-- `login.html` – demo login page
-- `profile.html` – user profile page
 
 ## Technologies
 
@@ -36,6 +32,57 @@ Terra Explore is a static travel discovery web project built for the Web Technol
 - [GeoNames](https://www.geonames.org/)
 - [OpenTripMap](https://opentripmap.io/)
 - [Pixabay](https://pixabay.com/api/docs/)
+
+## Pages
+
+- `index.html` – home page with search, globe, recent searches, and world map
+- `country.html` – country detail page with map and popular places
+- `compare-countries.html` – country comparison page
+- `signup.html` – demo sign up page
+- `login.html` – demo login page
+- `profile.html` – user profile page
+
+## Flow Diagram
+
+```mermaid
+flowchart TD
+    A[Home Page] --> B[Search or Map Selection]
+    B --> C[Country Details Page]
+    C --> D[Show Popular Places]
+    C --> E[Add Favorite Country]
+    C --> F[Mark as Visited or Want to Visit]
+    A --> G[Compare Countries Page]
+    A --> H[Sign Up / Login]
+    H --> I[Profile Page]
+    I --> J[Favorite Countries]
+    I --> K[Favorite Places]
+    I --> L[Visited Countries]
+    I --> M[Want to Visit List]
+```
+
+## Project Structure
+
+```text
+Terra-Explore/
+├── css/
+├── js/
+├── index.html
+├── country.html
+├── compare-countries.html
+├── signup.html
+├── login.html
+├── profile.html
+└── README.md
+```
+
+## Screenshots
+
+```text
+- Home page
+- Country details page
+- Compare countries page
+- Profile page
+```
 
 ## Setup
 
@@ -67,21 +114,6 @@ If your browser blocks some API behavior when opening the file directly, run the
 - Popular places settings
 
 `js/config.js` is meant to stay local. The repository should only include `js/config.example.js`.
-
-## Project Structure
-
-```text
-Terra-Explore/
-├── css/
-├── js/
-├── index.html
-├── country.html
-├── compare-countries.html
-├── signup.html
-├── login.html
-├── profile.html
-└── README.md
-```
 
 ## Notes
 
