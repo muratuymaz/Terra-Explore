@@ -37,6 +37,11 @@ function normalizeCountryName(value) {
         .join(" ");
 }
 
+/* Normalizes the value for country-name lookups without changing the visible text */
+function normalizeCountryLookup(value) {
+    return normalizeCountryName(value).toLowerCase();
+}
+
 /* Builds the detail page URL with the selected country name */
 function buildCountryPageUrl(countryName) {
     const searchParams = new URLSearchParams({ name: countryName });
@@ -52,6 +57,28 @@ function setError(message = "") {
 
     elements.errorMessage.textContent = message;
     elements.errorMessage.hidden = !message;
+}
+
+function clearError() {
+    setError();
+}
+
+function findCountryMatch(countryName) {
+    const normalizedCountryName = normalizeCountryLookup(countryName);
+
+    if (!normalizedCountryName) {
+        return "";
+    }
+
+    return countryNames.find((countryNameItem) => normalizeCountryLookup(countryNameItem) === normalizedCountryName) ?? "";
+}
+
+function updateSearchButtonState() {
+    if (!elements.searchButton) {
+        return;
+    }
+
+    elements.searchButton.disabled = !Boolean(findCountryMatch(elements.searchInput?.value ?? ""));
 }
 
 function setMapFeedback(message = "") {
@@ -104,6 +131,7 @@ function selectSuggestion(countryName) {
     elements.searchInput.value = countryName;
     setError();
     hideSuggestions();
+    updateSearchButtonState();
 }
 
 function renderSuggestions(suggestions) {
@@ -184,6 +212,7 @@ function updateSuggestions() {
 /* Sends the user to the country page if the input is usable */
 function redirectToCountry(countryName) {
     const normalizedCountryName = normalizeCountryName(countryName);
+    const matchedCountryName = findCountryMatch(normalizedCountryName);
 
     if (!normalizedCountryName) {
         setError("Please enter a country name.");
@@ -191,8 +220,15 @@ function redirectToCountry(countryName) {
         return;
     }
 
+    if (!matchedCountryName) {
+        setError("Please choose a country from the list.");
+        updateSuggestions();
+        elements.searchInput?.focus();
+        return;
+    }
+
     setError();
-    window.location.href = buildCountryPageUrl(normalizedCountryName);
+    window.location.href = buildCountryPageUrl(matchedCountryName);
 }
 
 /* Reads the current input value and starts the search flow */
@@ -336,6 +372,7 @@ function bindSearchControls() {
     elements.searchInput?.addEventListener("input", () => {
         clearError();
         updateSuggestions();
+        updateSearchButtonState();
     });
 
     elements.searchInput?.addEventListener("blur", () => {
@@ -344,6 +381,7 @@ function bindSearchControls() {
 
     elements.searchInput?.addEventListener("focus", () => {
         updateSuggestions();
+        updateSearchButtonState();
     });
 }
 
@@ -356,9 +394,15 @@ async function loadWorldMap() {
         const countries = await fetchCountriesForMap();
         countryNames = [...new Set(countries.map((country) => country.name))].sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
         renderCountryMarkers(countries);
+        updateSearchButtonState();
+        updateSuggestions();
     } catch {
         setMapFeedback("The map is unavailable right now.");
     }
+}
+
+if (elements.searchButton) {
+    elements.searchButton.disabled = true;
 }
 
 initHeaderAuth();
