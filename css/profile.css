@@ -14,15 +14,17 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    font-size: var(--text-caption);
     margin-bottom: 8px;
 }
 
 .profile-hero h2 {
-    font-size: 38px;
+    font-size: var(--text-hero);
     margin-bottom: 10px;
 }
 
 .profile-hero p:last-child {
+    font-size: 1.04rem;
     color: rgba(46, 50, 48, 0.8);
 }
 
@@ -41,6 +43,7 @@
 }
 
 .profile-card h3 {
+    font-size: var(--text-section);
     margin-bottom: 18px;
 }
 
@@ -117,7 +120,7 @@
 
 .profile-place-item span {
     color: rgba(46, 50, 48, 0.82);
-    font-size: 15px;
+    font-size: var(--text-small);
 }
 
 .profile-empty {
@@ -127,7 +130,7 @@
 
 @media (max-width: 768px) {
     .profile-hero h2 {
-        font-size: 30px;
+        font-size: 1.95rem;
     }
 
     .profile-storage-grid {

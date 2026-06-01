@@ -12,11 +12,12 @@
 }
 
 .signup-hero h2 {
-    font-size: 36px;
+    font-size: var(--text-hero);
     margin-bottom: 10px;
 }
 
 .signup-hero p {
+    font-size: 1.04rem;
     color: rgba(46, 50, 48, 0.8);
 }
 
@@ -39,6 +40,7 @@
 
 .signup-card h3,
 .favorites-card h3 {
+    font-size: var(--text-section);
     margin-bottom: 16px;
 }
 
@@ -58,7 +60,7 @@
 
 .form-note {
     margin-top: 12px;
-    font-size: 14px;
+    font-size: var(--text-caption);
     color: rgba(46, 50, 48, 0.7);
 }
 
@@ -127,7 +129,7 @@
 /* Mobile layout adjustment */
 @media (max-width: 768px) {
     .signup-hero h2 {
-        font-size: 28px;
+        font-size: 1.95rem;
     }
 
     .signup-actions {

@@ -1,5 +1,5 @@
 /* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,200..900&family=Source+Sans+3:wght@200..900&display=swap');
 
 /* Core color palette used across the application */
 :root {
@@ -23,6 +23,13 @@
     --border-soft: rgba(129, 105, 74, 0.14);
     --shadow-soft: 0 18px 40px rgba(63, 53, 40, 0.07);
     --shadow-medium: 0 14px 28px rgba(63, 53, 40, 0.09);
+    --text-hero: 2.3rem;
+    --text-section: 1.9rem;
+    --text-card-title: 1.45rem;
+    --text-body: 1rem;
+    --text-small: 0.95rem;
+    --text-caption: 0.88rem;
+    --line-heading: 1.15;
 }
 
 /* Resets default browser styling and applies border-box sizing to all elements */
@@ -34,7 +41,7 @@
 
 /* Sets the foundation for typography and page background */
 body {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Source Sans 3', sans-serif;
     background:
         radial-gradient(circle at top, rgba(255, 249, 240, 0.78), transparent 34%),
         linear-gradient(180deg, #f6eee2 0%, #f3ebdf 44%, #f1e8db 100%);
@@ -42,12 +49,20 @@ body {
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Keep page content above the texture layer */
 body > * {
     position: relative;
     z-index: 1;
+}
+
+main {
+    width: 100%;
+    flex: 1 0 auto;
 }
 
 /* Soft page texture that sits behind the main content */
@@ -88,6 +103,8 @@ body > * {
 h1, h2, h3 {
     font-family: 'Literata', serif;
     color: var(--green);
+    line-height: var(--line-heading);
+    font-weight: 800;
 }
 
 /* Flexbox container for the main header */
@@ -105,10 +122,32 @@ h1, h2, h3 {
     justify-self: start;
 }
 
+.logo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--cream);
+}
+
+.logo-mark {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--cream);
+    background: transparent;
+    transform: translateY(7px);
+    flex-shrink: 0;
+}
+
 /* Logo text styling inside the menu */
 .menu h1 {
     color: var(--cream);
     letter-spacing: -0.02em;
+    font-size: 2.2rem;
 }
 
 /* Removes default underline from all links in the menu */
@@ -125,7 +164,7 @@ h1, h2, h3 {
     border: none;
     border-radius: 14px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: var(--text-body);
     font-weight: bold;
     box-shadow: 0 10px 20px rgba(53, 91, 65, 0.14);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
@@ -151,7 +190,7 @@ input {
     border: 1px solid rgba(129, 105, 74, 0.28);
     border-radius: 14px;
     padding: 11px 12px;
-    font-size: 16px;
+    font-size: var(--text-body);
     outline: none;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
@@ -175,7 +214,7 @@ input:focus {
 /* Styling for the individual page links */
 .menu-links a {
     color: rgba(250, 246, 240, 0.94);
-    font-size: 17px;
+    font-size: 1.06rem;
     font-weight: bold;
     padding: 10px 16px;
     border-radius: 999px;
@@ -211,7 +250,7 @@ input:focus {
     border: 1px solid rgba(241, 231, 214, 0.48);
     border-radius: 14px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: var(--text-body);
     font-weight: bold;
     text-decoration: none;
     display: inline-flex;
@@ -262,7 +301,7 @@ input:focus {
 }
 
 .menu-logout-button {
-    font-size: 16px;
+    font-size: var(--text-body);
     font-weight: bold;
 }
 
@@ -279,23 +318,40 @@ input:focus {
         flex-wrap: wrap;
         justify-content: center;
     }
+
+    .menu h1 {
+        font-size: 1.95rem;
+    }
+
+    .logo-link {
+        gap: 10px;
+    }
+
+    .logo-mark {
+        width: 30px;
+        height: 30px;
+        font-size: 1.7rem;
+        transform: translateY(5px);
+    }
 }
 
 /* Styling for the standalone, rounded footer box at the bottom of the page */
 .footer {
-    background: linear-gradient(135deg, #436f52 0%, #567f61 100%); /* Green box color */
+    background: linear-gradient(135deg, #416b50 0%, #567f61 100%); /* Green box color */
     color: var(--cream); 
-    padding: 30px 20px;
+    padding: 28px 20px;
     text-align: center;
     display: flex;
-    flex-direction: column; /* Stacks footer contents vertically */
+    justify-content: center;
     align-items: center;
-    gap: 15px; /* Vertical spacing between footer items */
+    width: 100%;
+    margin-top: 56px;
+    border-top: 1px solid rgba(241, 231, 214, 0.18);
+    box-shadow: 0 -8px 24px rgba(34, 51, 40, 0.08); /* Box shadow */
+}
 
-    /* Footer box */
+.footer-text {
     max-width: 1000px;
-    width: calc(100% - 40px);
-    margin: 0 auto 40px auto;
-    border-radius: 16px;
-    box-shadow: 0 16px 30px rgba(34, 51, 40, 0.12); /* Box shadow */
+    width: 100%;
+    margin: 0 auto;
 }
