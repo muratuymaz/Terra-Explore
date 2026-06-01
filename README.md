@@ -64,6 +64,7 @@ flowchart TD
 
 ```text
 Terra-Explore/
+├── docs/
 ├── css/
 ├── js/
 ├── index.html
@@ -77,12 +78,19 @@ Terra-Explore/
 
 ## Screenshots
 
-```text
-- Home page
-- Country details page
-- Compare countries page
-- Profile page
-```
+### Home Page
+![Home Page 1](docs/home-page-1.jpeg)
+
+![Home Page 2](docs/home-page-2.jpeg)
+
+### Country Details
+![Country Details](docs/country-details.jpeg)
+
+### Compare Countries
+![Compare Countries](docs/compare-countries.jpeg)
+
+### Profile Page
+![Profile Page](docs/profile-page.jpeg)
 
 ## Setup
 
@@ -119,4 +127,3 @@ If your browser blocks some API behavior when opening the file directly, run the
 
 - The signup and login flow is a frontend demo flow.
 - User data and travel lists are stored locally in the browser with `localStorage`.
-- If real API keys were ever committed before, they should be rotated.
