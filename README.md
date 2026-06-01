@@ -64,16 +64,16 @@ flowchart TD
 
 ```text
 Terra-Explore/
-├── docs/
-├── css/
-├── js/
-├── index.html
-├── country.html
-├── compare-countries.html
-├── signup.html
-├── login.html
-├── profile.html
-└── README.md
+├── docs/                    # Project screenshots used in the README
+├── css/                     # Shared and page-specific style files
+├── js/                      # API, page logic, auth, and local storage scripts
+├── index.html               # Home page with search, globe, and world map
+├── country.html             # Country details and popular places page
+├── compare-countries.html   # Country comparison page
+├── signup.html              # Demo sign up page
+├── login.html               # Demo login page
+├── profile.html             # User profile page
+└── README.md                # Project documentation
 ```
 
 ## Screenshots
