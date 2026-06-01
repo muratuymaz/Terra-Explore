@@ -45,9 +45,9 @@
     padding: 24px;
     border-radius: 18px;
     text-align: left;
-    background: linear-gradient(145deg, rgba(247, 242, 233, 0.98), rgba(238, 231, 220, 0.94));
-    border: 1px solid rgba(108, 80, 39, 0.12);
-    box-shadow: 0 18px 40px rgba(63, 53, 40, 0.08);
+    background: var(--surface-main);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
 }
 
 /* Card heading styles */
@@ -59,7 +59,7 @@
 
 /* Short descriptive text inside the card header */
 .compare-header p {
-    color: rgba(108, 80, 39, 0.82);
+    color: rgba(129, 105, 74, 0.82);
     margin-bottom: 18px;
 }
 
@@ -95,8 +95,8 @@
     flex: 1 1 320px;
     padding: 18px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.48);
-    border: 1px solid rgba(108, 80, 39, 0.12);
+    background: linear-gradient(145deg, rgba(255, 252, 247, 0.78), rgba(238, 247, 250, 0.66));
+    border: 1px solid rgba(111, 160, 183, 0.16);
     display: flex;
     flex-direction: column;
     gap: 18px;
@@ -137,8 +137,8 @@
     align-items: flex-start;
     padding: 12px 14px;
     border-radius: 14px;
-    background: rgba(250, 246, 240, 0.82);
-    border: 1px solid rgba(108, 80, 39, 0.1);
+    background: rgba(255, 251, 246, 0.84);
+    border: 1px solid rgba(129, 105, 74, 0.1);
 }
 
 /* Number badge at the start of each historical place row */
@@ -164,7 +164,7 @@
 .compare-place-copy p,
 .compare-place-copy span,
 .compare-place-empty {
-    color: rgba(108, 80, 39, 0.84);
+    color: rgba(129, 105, 74, 0.84);
     font-size: 14px;
 }
 
@@ -181,7 +181,7 @@
     justify-content: center;
     padding: 8px 12px;
     border-radius: 999px;
-    background: rgba(77, 132, 98, 0.12);
+    background: rgba(220, 231, 218, 0.88);
     color: var(--green);
     font-size: 13px;
     font-weight: 800;
@@ -190,7 +190,7 @@
 }
 
 .compare-place-map-link:hover {
-    background: rgba(77, 132, 98, 0.18);
+    background: rgba(205, 221, 203, 0.92);
     transform: translateY(-1px);
 }
 

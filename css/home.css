@@ -12,6 +12,59 @@
     margin-bottom: 10px; /* Adds space between the heading and the descriptive paragraph */
 }
 
+.search-area p {
+    max-width: 620px;
+    margin-inline: auto;
+}
+
+.hero-globe-stage {
+    position: relative;
+    width: min(100%, 520px);
+    margin: 28px auto 18px;
+}
+
+.hero-globe-frame {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    margin: 30px auto 14px;
+    background:
+        radial-gradient(circle at 50% 46%, rgba(220, 238, 243, 0.52), transparent 48%),
+        radial-gradient(circle at 52% 100%, rgba(135, 183, 197, 0.18), transparent 54%);
+    overflow: hidden;
+}
+
+.hero-globe-frame::before,
+.hero-globe-frame::after {
+    content: "";
+    position: absolute;
+    inset: 12% 18%;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-globe-frame::before {
+    border: 1px solid rgba(77, 132, 98, 0.14);
+    transform: rotate(-18deg);
+}
+
+.hero-globe-frame::after {
+    border: 1px solid rgba(77, 132, 98, 0.1);
+    transform: rotate(62deg);
+}
+
+#heroGlobeContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+#heroGlobeContainer canvas {
+    display: block;
+    margin: 0 auto;
+}
+
 /* Flexbox container for the search input and button to align them perfectly side-by-side */
 .search-box {
     display: flex;
@@ -38,9 +91,9 @@
     z-index: 10;
     padding: 8px;
     border-radius: 14px;
-    border: 1px solid rgba(108, 80, 39, 0.14);
-    background: rgba(250, 246, 240, 0.98);
-    box-shadow: 0 16px 34px rgba(63, 53, 40, 0.12);
+    border: 1px solid var(--border-soft);
+    background: rgba(253, 249, 244, 0.98);
+    box-shadow: var(--shadow-medium);
     text-align: left;
 }
 
@@ -69,9 +122,21 @@
     padding: 24px;
     border-radius: 18px;
     text-align: left;
-    background: linear-gradient(145deg, rgba(247, 242, 233, 0.98), rgba(238, 231, 220, 0.94));
-    border: 1px solid rgba(108, 80, 39, 0.12);
-    box-shadow: 0 18px 40px rgba(63, 53, 40, 0.08);
+    background: var(--surface-main);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+}
+
+.recent-searches-panel::after {
+    content: "";
+    position: absolute;
+    inset: auto 24px 16px auto;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(220, 238, 243, 0.28), transparent 72%);
+    pointer-events: none;
 }
 
 .recent-searches-header h3 {
@@ -80,7 +145,7 @@
 }
 
 .recent-searches-header p {
-    color: rgba(108, 80, 39, 0.82);
+    color: rgba(129, 105, 74, 0.82);
     margin-bottom: 18px;
 }
 
@@ -95,14 +160,14 @@
     align-items: center;
     padding: 10px 14px;
     border-radius: 999px;
-    background: rgba(77, 132, 98, 0.12);
+    background: rgba(220, 231, 218, 0.88);
     color: var(--green);
     font-weight: 700;
     text-decoration: none;
 }
 
 .empty-state-text {
-    color: rgba(108, 80, 39, 0.78);
+    color: rgba(129, 105, 74, 0.76);
     font-size: 15px;
 }
 
@@ -111,9 +176,9 @@
     margin-top: 50px;
     padding: 26px;
     border-radius: 18px;
-    background: linear-gradient(145deg, rgba(247, 242, 233, 0.98), rgba(238, 231, 220, 0.94));
-    border: 1px solid rgba(108, 80, 39, 0.12);
-    box-shadow: 0 18px 40px rgba(63, 53, 40, 0.08);
+    background: var(--surface-main);
+    border: 1px solid rgba(111, 160, 183, 0.16);
+    box-shadow: var(--shadow-soft);
 }
 
 .map-header {
@@ -132,14 +197,15 @@
 .map-feedback {
     margin: 0;
     font-size: 15px;
-    color: rgba(108, 80, 39, 0.8);
+    color: rgba(129, 105, 74, 0.8);
 }
 
 #worldMapContainer {
     height: 460px;
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(108, 80, 39, 0.12);
+    border: 1px solid var(--sky-border);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34);
 }
 
 .map-text {
@@ -153,7 +219,7 @@
     align-items: center;
     gap: 10px;
     margin-top: 12px;
-    color: rgba(108, 80, 39, 0.8);
+    color: rgba(129, 105, 74, 0.8);
     font-size: 15px;
 }
 
@@ -202,7 +268,7 @@
 }
 
 .country-marker-halo {
-    background: rgba(247, 242, 233, 0.92);
+    background: rgba(252, 248, 243, 0.94);
     box-shadow: 0 0 0 2px var(--marker-ring), 0 3px 8px rgba(63, 53, 40, 0.14);
     inset: 0;
 }
@@ -242,6 +308,16 @@
     /* Reduce the main heading size for smaller screens to prevent awkward text wrapping */
     .search-area h2 {
         font-size: 28px;
+    }
+
+    .hero-globe-stage {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .hero-globe-frame {
+        height: 280px;
+        margin-bottom: 4px;
     }
 
     /* Stack the search input and button vertically (top-to-bottom) instead of side-by-side */

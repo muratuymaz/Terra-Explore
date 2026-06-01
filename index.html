@@ -21,7 +21,7 @@
         </div>
         
         <nav class="menu-links">
-            <a href="index.html">Home</a>
+            <a href="index.html" aria-current="page">Home</a>
             <a href="compare-countries.html">Compare Countries</a>
         </nav>
 
@@ -36,6 +36,13 @@
         <section class="search-area">
             <h2>Find Your Next Destination</h2>
             <p>Enter a country name to explore its culture, details, and popular places.</p>
+
+            <!-- Decorative 3D globe that makes the landing area feel more travel-focused -->
+            <div class="hero-globe-stage" aria-hidden="true">
+                <div class="hero-globe-frame">
+                    <div id="heroGlobeContainer"></div>
+                </div>
+            </div>
             
             <div class="search-box">
                 <div class="search-input-group">
@@ -86,6 +93,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
     <!-- Home page behavior and map marker interactions -->
     <script type="module" src="js/home.js"></script>
     

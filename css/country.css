@@ -10,8 +10,10 @@
     max-width: 900px;
     margin: 40px auto;
     padding: 30px; 
-    background-color: rgba(250, 246, 240, 0.95);
-    border-radius: 12px;
+    background: rgba(250, 246, 240, 0.94);
+    border-radius: 16px;
+    border: 1px solid rgba(129, 105, 74, 0.12);
+    box-shadow: var(--shadow-soft);
 }
 
 /* Flags and country info */
@@ -93,6 +95,19 @@
     border-top: 2px solid #ddd;
     padding-top: 30px;
     margin-bottom: 34px;
+    position: relative;
+}
+
+.country-map-area::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(220, 238, 243, 0.24), transparent 72%);
+    pointer-events: none;
 }
 
 .country-map-header {
@@ -108,7 +123,7 @@
 }
 
 .country-map-feedback {
-    color: var(--brown);
+    color: var(--taupe);
     font-size: 17px;
 }
 
@@ -117,7 +132,7 @@
     height: 330px;
     border-radius: 18px;
     overflow: hidden;
-    border: 1px solid rgba(120, 96, 60, 0.18);
+    border: 1px solid var(--sky-border);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
 }
 
@@ -145,7 +160,7 @@
 
 /* Styling for each generated location card */
 .place-card {
-    background-color: var(--cream);
+    background: var(--surface-soft);
     padding: 20px; 
     border-radius: 12px;
     border-left: 5px solid var(--brown);
@@ -159,7 +174,7 @@
 .place-card:hover,
 .place-card:focus-within {
     transform: translateY(-4px);
-    box-shadow: 0 14px 30px rgba(63, 53, 40, 0.12);
+    box-shadow: var(--shadow-medium);
     border-left-color: var(--green);
 }
 
@@ -173,7 +188,7 @@
 .place-favorite-button {
     flex-shrink: 0;
     border: 0;
-    background: rgba(77, 132, 98, 0.12);
+    background: rgba(220, 231, 218, 0.88);
     color: var(--green);
     width: 40px;
     height: 40px;
@@ -210,7 +225,7 @@
     gap: 8px;
     align-self: flex-start;
     color: #fff;
-    background: linear-gradient(135deg, var(--green), #3c7551);
+    background: linear-gradient(135deg, var(--green), var(--green-deep));
     padding: 10px 14px;
     border-radius: 999px;
     font-weight: 700;

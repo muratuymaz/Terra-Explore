@@ -9,13 +9,18 @@ const elements = {
     searchButton: document.querySelector("#searchBtn"),
     searchSuggestions: document.querySelector("#searchSuggestions"),
     errorMessage: document.querySelector("#errorMessage"),
+    heroGlobeContainer: document.querySelector("#heroGlobeContainer"),
     recentSearches: document.querySelector("#recentSearches"),
     worldMapContainer: document.querySelector("#worldMapContainer"),
     mapFeedback: document.querySelector("#mapFeedback")
 };
 const MAX_SUGGESTIONS = 6;
+const HERO_GLOBE_TEXTURE = "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
+const HERO_GLOBE_BUMP = "https://unpkg.com/three-globe/example/img/earth-topology.png";
+const HERO_GLOBE_BACKGROUND = "rgba(255, 249, 240, 0)";
 let worldMap = null;
 let worldMarkersLayer = null;
+let heroGlobe = null;
 let countryNames = [];
 let visibleSuggestions = [];
 let activeSuggestionIndex = -1;
@@ -85,6 +90,64 @@ function setMapFeedback(message = "") {
     if (elements.mapFeedback) {
         elements.mapFeedback.textContent = message;
     }
+}
+
+/* Creates the decorative 3D globe in the landing area without affecting the real map below */
+function loadHeroGlobe() {
+    if (!elements.heroGlobeContainer || !window.Globe || heroGlobe) {
+        return;
+    }
+
+    const containerWidth = elements.heroGlobeContainer.clientWidth || 520;
+    let containerHeight = 360;
+
+    if (window.innerWidth <= 768) {
+        containerHeight = 280;
+    }
+
+    heroGlobe = window.Globe()(elements.heroGlobeContainer)
+        .width(containerWidth)
+        .height(containerHeight)
+        .backgroundColor(HERO_GLOBE_BACKGROUND)
+        .globeImageUrl(HERO_GLOBE_TEXTURE)
+        .bumpImageUrl(HERO_GLOBE_BUMP)
+        .showAtmosphere(true)
+        .atmosphereColor("#cfefff")
+        .atmosphereAltitude(0.24);
+
+    heroGlobe.pointOfView({ lat: 18, lng: 16, altitude: 2.1 }, 0);
+
+    const globeMaterial = heroGlobe.globeMaterial();
+
+    globeMaterial.color.set("#eef8ff");
+    globeMaterial.emissive.set("#264f5d");
+    globeMaterial.emissiveIntensity = 0.14;
+    globeMaterial.shininess = 1.1;
+
+    const controls = heroGlobe.controls();
+
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.45;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.minDistance = 260;
+    controls.maxDistance = 260;
+}
+
+function resizeHeroGlobe() {
+    if (!heroGlobe || !elements.heroGlobeContainer) {
+        return;
+    }
+
+    const containerWidth = elements.heroGlobeContainer.clientWidth || 520;
+    let containerHeight = 360;
+
+    if (window.innerWidth <= 768) {
+        containerHeight = 280;
+    }
+
+    heroGlobe.width(containerWidth);
+    heroGlobe.height(containerHeight);
 }
 
 function renderRecentSearches() {
@@ -408,4 +471,6 @@ if (elements.searchButton) {
 initHeaderAuth();
 renderRecentSearches();
 bindSearchControls();
+loadHeroGlobe();
 loadWorldMap();
+window.addEventListener("resize", resizeHeroGlobe);

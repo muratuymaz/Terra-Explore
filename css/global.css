@@ -3,11 +3,26 @@
 
 /* Core color palette used across the application */
 :root {
-    --green: #4a7c59;    
-    --cream: #faf6f0;         
-    --brown: #705c30;     
-    --dark-gray: #2e3230;       
+    --green: #4a7c59;
+    --green-deep: #355b41;
+    --green-soft: #dce7da;
+    --green-mist: #eef4ed;
+    --cream: #faf6f0;
+    --cream-deep: #f1e7d6;
+    --cream-soft: #f7efe3;
+    --brown: #81694a;
+    --taupe: #9a8668;
+    --sky-soft: #dceef3;
+    --sky-mist: #edf7fb;
+    --sky-border: rgba(111, 160, 183, 0.2);
+    --dark-gray: #2e3230;
     --white: #ffffff;
+    --surface-main: linear-gradient(145deg, rgba(250, 246, 240, 0.98), rgba(242, 235, 225, 0.95));
+    --surface-soft: linear-gradient(145deg, rgba(252, 248, 243, 0.96), rgba(244, 238, 229, 0.9));
+    --surface-raised: rgba(255, 252, 247, 0.74);
+    --border-soft: rgba(129, 105, 74, 0.14);
+    --shadow-soft: 0 18px 40px rgba(63, 53, 40, 0.07);
+    --shadow-medium: 0 14px 28px rgba(63, 53, 40, 0.09);
 }
 
 /* Resets default browser styling and applies border-box sizing to all elements */
@@ -20,7 +35,9 @@
 /* Sets the foundation for typography and page background */
 body {
     font-family: 'Nunito Sans', sans-serif;
-    background-color: #f1eadf;
+    background:
+        radial-gradient(circle at top, rgba(255, 249, 240, 0.78), transparent 34%),
+        linear-gradient(180deg, #f6eee2 0%, #f3ebdf 44%, #f1e8db 100%);
     color: var(--dark-gray);
     line-height: 1.6;
     position: relative;
@@ -33,7 +50,7 @@ body > * {
     z-index: 1;
 }
 
-/* Mouse-following background texture */
+/* Soft page texture that sits behind the main content */
 .global-texture-layer {
     position: fixed;
     inset: 0;
@@ -41,7 +58,6 @@ body > * {
     z-index: 0;
     opacity: 0.38;
     background:
-        radial-gradient(circle at var(--texture-x, 50%) var(--texture-y, 50%), rgba(46, 50, 48, 0.18), transparent 12%),
         repeating-linear-gradient(135deg, rgba(46, 50, 48, 0.06) 0 2px, transparent 2px 12px),
         repeating-linear-gradient(45deg, rgba(74, 124, 89, 0.04) 0 1px, transparent 1px 16px),
         linear-gradient(180deg, rgba(250, 246, 240, 0.03), rgba(46, 50, 48, 0.02));
@@ -63,26 +79,6 @@ body > * {
     opacity: 0.42;
 }
 
-.global-texture-layer::after {
-    content: "";
-    position: absolute;
-    left: var(--texture-x, 50%);
-    top: var(--texture-y, 50%);
-    width: 180px;
-    height: 180px;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 35% 35%, rgba(74, 124, 89, 0.30), rgba(46, 50, 48, 0.22) 42%, rgba(24, 28, 26, 0.12) 62%, transparent 74%),
-        radial-gradient(circle at 55% 55%, rgba(250, 246, 240, 0.12), transparent 60%);
-    box-shadow:
-        0 0 28px rgba(46, 50, 48, 0.32),
-        inset 0 0 20px rgba(255, 255, 255, 0.08);
-    filter: blur(0.4px);
-    opacity: 0.96;
-}
-
-.global-texture-layer::after,
 .global-texture-layer::before,
 .global-texture-layer {
     transition: opacity 0.25s ease;
@@ -96,11 +92,13 @@ h1, h2, h3 {
 
 /* Flexbox container for the main header */
 .menu {
-    background-color: var(--green);
-    padding: 20px;
+    padding: 18px 24px;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    background: linear-gradient(90deg, var(--green-deep) 0%, var(--green) 46%, #5b8a66 100%);
+    border-bottom: 1px solid rgba(241, 231, 214, 0.26);
+    box-shadow: 0 10px 30px rgba(34, 51, 40, 0.12);
 }
 
 .logo {
@@ -110,6 +108,7 @@ h1, h2, h3 {
 /* Logo text styling inside the menu */
 .menu h1 {
     color: var(--cream);
+    letter-spacing: -0.02em;
 }
 
 /* Removes default underline from all links in the menu */
@@ -122,66 +121,95 @@ h1, h2, h3 {
 .button {
     background-color: var(--green);
     color: var(--cream);
-    padding: 10px 20px;
+    padding: 11px 22px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
+    box-shadow: 0 10px 20px rgba(53, 91, 65, 0.14);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background-color: var(--green-deep);
+    box-shadow: 0 14px 24px rgba(53, 91, 65, 0.18);
 }
 
 /* Visual state for buttons when they are disabled (e.g., during loading) */
 .button:disabled {
-    background-color: #a3b8aa; /* Light green */
+    background-color: #a9bcae; /* Light green */
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* Inputs */
 /* Default styling for text input fields */
 input {
-    background-color: var(--cream);
-    border: 1px solid gray;
-    border-radius: 12px;
-    padding: 10px;
+    background-color: rgba(255, 252, 247, 0.94);
+    border: 1px solid rgba(129, 105, 74, 0.28);
+    border-radius: 14px;
+    padding: 11px 12px;
     font-size: 16px;
     outline: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input:focus {
+    border-color: rgba(111, 160, 183, 0.42);
+    box-shadow:
+        0 0 0 4px rgba(190, 224, 236, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 /* Container for the page links in the header menu */
 .menu-links {
     display: flex;
-    gap: 30px; /* Horizontal spacing between each link */
+    gap: 14px; /* Horizontal spacing between each link */
     align-items: center;
     justify-self: center;
 }
 
 /* Styling for the individual page links */
 .menu-links a {
-    color: var(--cream);
-    font-size: 18px;
+    color: rgba(250, 246, 240, 0.94);
+    font-size: 17px;
     font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 999px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-/* Adds underline effect when hovering over menu links */
+/* Adds soft highlight when hovering over menu links */
 .menu-links a:hover {
-    text-decoration: underline;
+    color: var(--white);
+    background: rgba(250, 246, 240, 0.12);
+    transform: translateY(-1px);
+}
+
+.menu-links a[aria-current="page"] {
+    color: var(--green-deep);
+    background: linear-gradient(180deg, rgba(250, 246, 240, 0.95), rgba(239, 229, 214, 0.96));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
 }
 
 /* Container for the right-side buttons (Search, Sign Up) */
 .menu-actions {
     display: flex;
-    gap: 15px; /* Horizontal spacing between buttons */
+    gap: 12px; /* Horizontal spacing between buttons */
     align-items: center;
     justify-self: end;
 }
 
 /* Secondary button style */
 .button-light {
-    background-color: var(--cream);
+    background-color: rgba(250, 246, 240, 0.96);
     color: var(--green);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 12px;
+    padding: 11px 20px;
+    border: 1px solid rgba(241, 231, 214, 0.48);
+    border-radius: 14px;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
@@ -189,24 +217,48 @@ input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 10px 18px rgba(33, 48, 38, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.button-light:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 24px rgba(33, 48, 38, 0.14);
+}
+
+.menu-actions .button-light:first-child {
+    background: linear-gradient(180deg, rgba(250, 246, 240, 0.98), rgba(238, 229, 216, 0.96));
+}
+
+.menu-actions .button-light:last-child {
+    background: transparent;
+    color: var(--cream);
+    border-color: rgba(250, 246, 240, 0.36);
+    box-shadow: none;
+}
+
+.menu-actions .button-light:last-child:hover {
+    background: rgba(250, 246, 240, 0.1);
+    color: var(--white);
 }
 
 /* Transparent button style */
 .button-text {
     background-color: transparent;
     color: var(--cream);
-    padding: 10px;
+    padding: 10px 12px;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition);
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 /* Slightly scales up the element when hovered */
 .button-text:hover {
-    transform: scale(1.1);
+    transform: translateY(-1px);
+    opacity: 0.9;
 }
 
 .menu-logout-button {
@@ -231,7 +283,7 @@ input {
 
 /* Styling for the standalone, rounded footer box at the bottom of the page */
 .footer {
-    background-color: var(--green); /* Green box color */
+    background: linear-gradient(135deg, #436f52 0%, #567f61 100%); /* Green box color */
     color: var(--cream); 
     padding: 30px 20px;
     text-align: center;
@@ -244,6 +296,6 @@ input {
     max-width: 1000px;
     width: calc(100% - 40px);
     margin: 0 auto 40px auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(4, 86, 45, 0.1); /* Box shadow */
+    border-radius: 16px;
+    box-shadow: 0 16px 30px rgba(34, 51, 40, 0.12); /* Box shadow */
 }
