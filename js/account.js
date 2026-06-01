@@ -60,9 +60,15 @@ function handleSignupSubmit(event) {
 /* Fills the profile page with saved user data */
 function fillProfile() {
     const savedUser = getCurrentUser();
-    const name = savedUser?.name || "";
-    const email = savedUser?.email || "";
-    const country = savedUser?.country || "";
+    let name = "";
+    let email = "";
+    let country = "";
+
+    if (savedUser) {
+        name = savedUser.name || "";
+        email = savedUser.email || "";
+        country = savedUser.country || "";
+    }
 
     if (name) {
         profileElements.greeting.textContent = "Welcome, " + name;
@@ -78,12 +84,17 @@ function fillProfile() {
     }
 
     if (name || country) {
-        const placeText = country ? " from " + country : "";
+        let placeText = "";
+
+        if (country) {
+            placeText = " from " + country;
+        }
 
         profileElements.subtitle.textContent = "Your TerraExplore profile is ready" + placeText + ". Start exploring your next destination.";
     }
 }
 
+/* Renders one group of saved country links inside the profile page */
 function renderCountryTags(container, countries, emptyText) {
     if (!container) {
         return;
@@ -106,6 +117,7 @@ function renderCountryTags(container, countries, emptyText) {
     });
 }
 
+/* Shows the saved favorite places list on the profile page */
 function renderFavoritePlaces() {
     if (!profileElements.favoritePlaces) {
         return;
@@ -132,6 +144,7 @@ function renderFavoritePlaces() {
     });
 }
 
+/* Fills all saved travel sections after the profile page loads */
 function fillTravelLists() {
     renderCountryTags(profileElements.favoriteCountries, getFavoriteCountries(), "No favorite countries yet.");
     renderCountryTags(profileElements.visitedCountries, getVisitedCountries(), "No visited countries yet.");
@@ -140,7 +153,10 @@ function fillTravelLists() {
 }
 
 initHeaderAuth();
-signupElements.form?.addEventListener("submit", handleSignupSubmit);
+
+if (signupElements.form) {
+    signupElements.form.addEventListener("submit", handleSignupSubmit);
+}
 
 if (profileElements.greeting) {
     fillProfile();

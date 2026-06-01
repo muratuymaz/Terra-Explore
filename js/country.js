@@ -49,6 +49,7 @@ let countryMap = null;
 let baseMapLayer = null;
 let placesMapLayer = null;
 
+/* Defines the world bounds used to keep the country map in range */
 function getCountryMapBounds() {
     const southWest = window.L.latLng(-85, -180);
     const northEast = window.L.latLng(85, 180);
@@ -58,10 +59,13 @@ function getCountryMapBounds() {
 
 /* Formats OpenTripMap kinds into a cleaner card label */
 function getPlaceCategory(kindsText = "") {
-    const category = kindsText
+    let category = kindsText
         .split(",")
-        .find((kind) => kind && kind !== "interesting_places")
-        ?? "popular place";
+        .find((kind) => kind && kind !== "interesting_places");
+
+    if (!category) {
+        category = "popular place";
+    }
 
     return toTitleCase(category.replace(/_/g, " "));
 }
@@ -76,23 +80,7 @@ function setPopularPlacesFeedback(message = "") {
     elements.popularPlacesFeedback.hidden = !message;
 }
 
-function buildPlaceMapUrl(place) {
-    const query = [
-        place.name,
-        place.sourceCity,
-        selectedCountry?.name
-    ]
-        .filter(Boolean)
-        .join(", ");
-
-    const searchParams = new URLSearchParams({
-        api: "1",
-        query
-    });
-
-    return "https://www.google.com/maps/search/?" + searchParams.toString();
-}
-
+/* Syncs the three country action buttons with the saved user state */
 function updateCountryActionButtons() {
     if (!selectedCountry) {
         return;
@@ -102,7 +90,11 @@ function updateCountryActionButtons() {
     const travelStatus = getCountryTravelStatus(selectedCountry.name);
 
     if (elements.favoriteCountryButton) {
-        elements.favoriteCountryButton.textContent = isCountryFavorite ? "Remove Favorite" : "Add to Favorites";
+        elements.favoriteCountryButton.textContent = "Add to Favorites";
+
+        if (isCountryFavorite) {
+            elements.favoriteCountryButton.textContent = "Remove Favorite";
+        }
         elements.favoriteCountryButton.classList.toggle("is-active", isCountryFavorite);
     }
 
@@ -115,14 +107,7 @@ function updateCountryActionButtons() {
     }
 }
 
-function setCountryMapFeedback(message = "") {
-    if (!elements.countryMapFeedback) {
-        return;
-    }
-
-    elements.countryMapFeedback.textContent = message;
-}
-
+/* Starts the Leaflet map used inside the country page */
 function ensureCountryMap() {
     if (countryMap || !elements.countryMap || !window.L) {
         return;
@@ -147,11 +132,15 @@ function ensureCountryMap() {
     placesMapLayer = window.L.layerGroup().addTo(countryMap);
 }
 
+/* Centers the map on the country or its capital when coordinates exist */
 function renderCountryMap(country) {
     ensureCountryMap();
 
     if (!countryMap || !baseMapLayer) {
-        return setCountryMapFeedback("Map could not be loaded.");
+        if (elements.countryMapFeedback) {
+            elements.countryMapFeedback.textContent = "Map could not be loaded.";
+        }
+        return;
     }
 
     baseMapLayer.clearLayers();
@@ -167,7 +156,10 @@ function renderCountryMap(country) {
     }
 
     if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) {
-        return setCountryMapFeedback("Map location is unavailable for this country.");
+        if (elements.countryMapFeedback) {
+            elements.countryMapFeedback.textContent = "Map location is unavailable for this country.";
+        }
+        return;
     }
 
     window.L.marker([markerLat, markerLng])
@@ -183,11 +175,15 @@ function renderCountryMap(country) {
     }).addTo(baseMapLayer);
 
     countryMap.setView([markerLat, markerLng], 5);
-    window.setTimeout(() => countryMap.invalidateSize(), 0);
+    countryMap.invalidateSize();
     window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 150);
-    setCountryMapFeedback("Showing " + markerLabel + " on the map.");
+
+    if (elements.countryMapFeedback) {
+        elements.countryMapFeedback.textContent = "Showing " + markerLabel + " on the map.";
+    }
 }
 
+/* Adds small markers for the loaded popular places on the country map */
 function renderPopularPlaceMarkers(places) {
     ensureCountryMap();
 
@@ -206,6 +202,14 @@ function renderPopularPlaceMarkers(places) {
     }
 
     placesWithCoordinates.forEach((place) => {
+        let popupLocation = "";
+
+        if (place.sourceCity) {
+            popupLocation = place.sourceCity;
+        } else if (selectedCountry) {
+            popupLocation = selectedCountry.name;
+        }
+
         window.L.circleMarker([place.lat, place.lng], {
             radius: 6,
             color: "#8a6740",
@@ -213,7 +217,7 @@ function renderPopularPlaceMarkers(places) {
             fillColor: "#f0d2a7",
             fillOpacity: 0.95
         })
-            .bindPopup("<strong>" + place.name + "</strong><br>" + (place.sourceCity || selectedCountry?.name || ""))
+            .bindPopup("<strong>" + place.name + "</strong><br>" + popupLocation)
             .addTo(placesMapLayer);
     });
 
@@ -224,7 +228,9 @@ function renderPopularPlaceMarkers(places) {
         window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 150);
     }
 
-    setCountryMapFeedback("Showing the selected country's map and popular places.");
+    if (elements.countryMapFeedback) {
+        elements.countryMapFeedback.textContent = "Showing the selected country's map and popular places.";
+    }
 }
 
 /* Renders the popular places list as simple cards */
@@ -250,9 +256,21 @@ function renderPopularPlaces(places) {
         title.textContent = place.name;
         favoriteButton.type = "button";
         favoriteButton.className = "place-favorite-button";
-        favoriteButton.textContent = isFavoritePlace(place, selectedCountry?.name || "") ? "★" : "☆";
+        let selectedCountryName = "";
+
+        if (selectedCountry) {
+            selectedCountryName = selectedCountry.name;
+        }
+
+        const placeIsFavorite = isFavoritePlace(place, selectedCountryName);
+
+        favoriteButton.textContent = "☆";
+
+        if (placeIsFavorite) {
+            favoriteButton.textContent = "★";
+        }
         favoriteButton.setAttribute("aria-label", "Toggle favorite place");
-        favoriteButton.classList.toggle("is-active", isFavoritePlace(place, selectedCountry?.name || ""));
+        favoriteButton.classList.toggle("is-active", placeIsFavorite);
         category.textContent = getPlaceCategory(place.kinds);
         location.textContent = "Location details not available";
 
@@ -260,16 +278,28 @@ function renderPopularPlaces(places) {
             location.textContent = place.sourceCity;
         }
         buttonsRow.className = "place-card-buttons";
-        mapAction.href = buildPlaceMapUrl(place);
+        const mapQuery = [
+            place.name,
+            place.sourceCity,
+            selectedCountryName
+        ]
+            .filter(Boolean)
+            .join(", ");
+
+        mapAction.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(mapQuery);
         mapAction.target = "_blank";
         mapAction.rel = "noopener noreferrer";
         mapAction.textContent = "Open in Google Maps";
         mapAction.className = "place-card-action";
 
         favoriteButton.addEventListener("click", () => {
-            const isNowFavorite = toggleFavoritePlace(place, selectedCountry?.name || "");
+            const isNowFavorite = toggleFavoritePlace(place, selectedCountryName);
 
-            favoriteButton.textContent = isNowFavorite ? "★" : "☆";
+            favoriteButton.textContent = "☆";
+
+            if (isNowFavorite) {
+                favoriteButton.textContent = "★";
+            }
             favoriteButton.classList.toggle("is-active", isNowFavorite);
         });
 
@@ -320,7 +350,7 @@ function renderCountryDetails(country) {
 
 /* Applies the fetched background image if one is available */
 function applyBackgroundImage(backgroundImage) {
-    if (!backgroundImage?.imageUrl || !elements.pageBody) {
+    if (!backgroundImage || !backgroundImage.imageUrl || !elements.pageBody) {
         return;
     }
 
@@ -343,11 +373,17 @@ function showPageError(message) {
     elements.currencyText.textContent = "Not available";
     setPopularPlacesLoadingState(false);
     elements.countryFlag.hidden = true;
-    elements.popularPlacesButton?.setAttribute("disabled", "true");
+    if (elements.popularPlacesButton) {
+        elements.popularPlacesButton.setAttribute("disabled", "true");
+    }
     setPopularPlacesFeedback(message);
     elements.popularPlacesGrid.innerHTML = "";
-    placesMapLayer?.clearLayers();
-    setCountryMapFeedback(message);
+    if (placesMapLayer) {
+        placesMapLayer.clearLayers();
+    }
+    if (elements.countryMapFeedback) {
+        elements.countryMapFeedback.textContent = message;
+    }
 }
 
 /* Loads and renders the country's popular places on demand */
@@ -397,45 +433,62 @@ async function handlePopularPlacesRequest() {
 
 /* Connects the country action button to the popular places flow */
 function bindPopularPlacesButton() {
-    elements.popularPlacesButton?.addEventListener("click", handlePopularPlacesRequest);
+    if (elements.popularPlacesButton) {
+        elements.popularPlacesButton.addEventListener("click", handlePopularPlacesRequest);
+    }
 }
 
+/* Connects the favorite and travel status buttons to saved profile data */
 function bindCountryActionButtons() {
-    elements.favoriteCountryButton?.addEventListener("click", () => {
-        if (!selectedCountry) {
-            return;
-        }
+    if (elements.favoriteCountryButton) {
+        elements.favoriteCountryButton.addEventListener("click", () => {
+            if (!selectedCountry) {
+                return;
+            }
 
-        toggleFavoriteCountry(selectedCountry.name);
-        updateCountryActionButtons();
-    });
+            toggleFavoriteCountry(selectedCountry.name);
+            updateCountryActionButtons();
+        });
+    }
 
-    elements.visitedCountryButton?.addEventListener("click", () => {
-        if (!selectedCountry) {
-            return;
-        }
+    if (elements.visitedCountryButton) {
+        elements.visitedCountryButton.addEventListener("click", () => {
+            if (!selectedCountry) {
+                return;
+            }
 
-        const travelStatus = getCountryTravelStatus(selectedCountry.name);
-        const nextStatus = travelStatus === "visited" ? "" : "visited";
+            const travelStatus = getCountryTravelStatus(selectedCountry.name);
+            let nextStatus = "visited";
 
-        setCountryTravelStatus(selectedCountry.name, nextStatus);
-        updateCountryActionButtons();
-    });
+            if (travelStatus === "visited") {
+                nextStatus = "";
+            }
 
-    elements.wantToVisitCountryButton?.addEventListener("click", () => {
-        if (!selectedCountry) {
-            return;
-        }
+            setCountryTravelStatus(selectedCountry.name, nextStatus);
+            updateCountryActionButtons();
+        });
+    }
 
-        const travelStatus = getCountryTravelStatus(selectedCountry.name);
-        const nextStatus = travelStatus === "want" ? "" : "want";
+    if (elements.wantToVisitCountryButton) {
+        elements.wantToVisitCountryButton.addEventListener("click", () => {
+            if (!selectedCountry) {
+                return;
+            }
 
-        setCountryTravelStatus(selectedCountry.name, nextStatus);
-        updateCountryActionButtons();
-    });
+            const travelStatus = getCountryTravelStatus(selectedCountry.name);
+            let nextStatus = "want";
+
+            if (travelStatus === "want") {
+                nextStatus = "";
+            }
+
+            setCountryTravelStatus(selectedCountry.name, nextStatus);
+            updateCountryActionButtons();
+        });
+    }
 }
 
-/* Loads the country data and optional background image together */
+/* Loads the selected country and then applies the optional background image */
 async function loadCountryPage() {
     const countryName = getQueryParam("name");
 
@@ -472,8 +525,9 @@ bindCountryActionButtons();
 bindPopularPlacesButton();
 loadCountryPage();
 
+/* Keeps the country map sized correctly if the window changes */
 window.addEventListener("resize", () => {
     if (countryMap) {
-        window.setTimeout(() => countryMap.invalidateSize({ pan: false }), 0);
+        countryMap.invalidateSize({ pan: false });
     }
 });

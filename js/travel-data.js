@@ -52,29 +52,6 @@ function buildPlaceKey(place, countryName) {
     return [placeName, cityName, normalizedCountryName].filter(Boolean).join("|");
 }
 
-/* Toggles a country in one saved list and returns the new active state */
-function toggleCountryInList(storageKey, countryName) {
-    const trimmedCountryName = String(countryName || "").trim();
-
-    if (!trimmedCountryName) {
-        return false;
-    }
-
-    const countries = readList(storageKey);
-    const countryKey = normalizeKey(trimmedCountryName);
-    const existingIndex = countries.findIndex((country) => normalizeKey(country) === countryKey);
-
-    if (existingIndex >= 0) {
-        countries.splice(existingIndex, 1);
-        writeList(storageKey, countries);
-        return false;
-    }
-
-    countries.unshift(trimmedCountryName);
-    writeList(storageKey, countries);
-    return true;
-}
-
 /* Keeps the recent country list fresh and limited to the latest few entries */
 export function saveRecentCountry(countryName) {
     const trimmedCountryName = String(countryName || "").trim();
@@ -97,7 +74,25 @@ export function getRecentCountries() {
 
 /* Adds or removes one country from the favorites list */
 export function toggleFavoriteCountry(countryName) {
-    return toggleCountryInList(STORAGE_KEYS.favoriteCountries, countryName);
+    const trimmedCountryName = String(countryName || "").trim();
+
+    if (!trimmedCountryName) {
+        return false;
+    }
+
+    const favoriteCountries = readList(STORAGE_KEYS.favoriteCountries);
+    const countryKey = normalizeKey(trimmedCountryName);
+    const existingIndex = favoriteCountries.findIndex((country) => normalizeKey(country) === countryKey);
+
+    if (existingIndex >= 0) {
+        favoriteCountries.splice(existingIndex, 1);
+        writeList(STORAGE_KEYS.favoriteCountries, favoriteCountries);
+        return false;
+    }
+
+    favoriteCountries.unshift(trimmedCountryName);
+    writeList(STORAGE_KEYS.favoriteCountries, favoriteCountries);
+    return true;
 }
 
 /* Checks whether the selected country is already favorited */

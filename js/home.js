@@ -49,9 +49,7 @@ function normalizeCountryLookup(value) {
 
 /* Builds the detail page URL with the selected country name */
 function buildCountryPageUrl(countryName) {
-    const searchParams = new URLSearchParams({ name: countryName });
-
-    return COUNTRY_PAGE_PATH + "?" + searchParams.toString();
+    return COUNTRY_PAGE_PATH + "?name=" + encodeURIComponent(countryName);
 }
 
 /* Keeps the small validation message under the search area in sync */
@@ -64,10 +62,7 @@ function setError(message = "") {
     elements.errorMessage.hidden = !message;
 }
 
-function clearError() {
-    setError();
-}
-
+/* Finds the saved country name that matches the current input */
 function findCountryMatch(countryName) {
     const normalizedCountryName = normalizeCountryLookup(countryName);
 
@@ -75,21 +70,28 @@ function findCountryMatch(countryName) {
         return "";
     }
 
-    return countryNames.find((countryNameItem) => normalizeCountryLookup(countryNameItem) === normalizedCountryName) ?? "";
+    const matchedCountry = countryNames.find((countryNameItem) => normalizeCountryLookup(countryNameItem) === normalizedCountryName);
+
+    if (!matchedCountry) {
+        return "";
+    }
+
+    return matchedCountry;
 }
 
+/* Enables the search button only when the input matches a real country */
 function updateSearchButtonState() {
     if (!elements.searchButton) {
         return;
     }
 
-    elements.searchButton.disabled = !Boolean(findCountryMatch(elements.searchInput?.value ?? ""));
-}
+    let inputValue = "";
 
-function setMapFeedback(message = "") {
-    if (elements.mapFeedback) {
-        elements.mapFeedback.textContent = message;
+    if (elements.searchInput) {
+        inputValue = elements.searchInput.value;
     }
+
+    elements.searchButton.disabled = !Boolean(findCountryMatch(inputValue));
 }
 
 /* Creates the decorative 3D globe in the landing area without affecting the real map below */
@@ -134,6 +136,7 @@ function loadHeroGlobe() {
     controls.maxDistance = 260;
 }
 
+/* Resizes the hero globe when the browser width changes */
 function resizeHeroGlobe() {
     if (!heroGlobe || !elements.heroGlobeContainer) {
         return;
@@ -150,6 +153,7 @@ function resizeHeroGlobe() {
     heroGlobe.height(containerHeight);
 }
 
+/* Renders the recent search chips shown on the home page */
 function renderRecentSearches() {
     if (!elements.recentSearches) {
         return;
@@ -173,6 +177,7 @@ function renderRecentSearches() {
     });
 }
 
+/* Hides the autocomplete list and resets its temporary state */
 function hideSuggestions() {
     visibleSuggestions = [];
     activeSuggestionIndex = -1;
@@ -186,38 +191,26 @@ function hideSuggestions() {
     elements.searchInput.setAttribute("aria-expanded", "false");
 }
 
-function selectSuggestion(countryName) {
-    if (!elements.searchInput) {
-        return;
-    }
-
-    elements.searchInput.value = countryName;
-    setError();
-    hideSuggestions();
-    updateSearchButtonState();
-}
-
-function renderSuggestions(suggestions) {
-    visibleSuggestions = suggestions;
-    activeSuggestionIndex = -1;
-
+/* Draws the currently visible autocomplete suggestions under the input */
+function renderSuggestions() {
     if (!elements.searchSuggestions || !elements.searchInput) {
         return;
     }
 
-    if (!suggestions.length) {
+    if (!visibleSuggestions.length) {
         hideSuggestions();
         return;
     }
 
     elements.searchSuggestions.innerHTML = "";
 
-    suggestions.forEach((countryName, index) => {
+    visibleSuggestions.forEach((countryName, index) => {
         const suggestionButton = document.createElement("button");
 
         suggestionButton.type = "button";
         suggestionButton.className = "suggestion-item";
         suggestionButton.textContent = countryName;
+        suggestionButton.classList.toggle("is-active", index === activeSuggestionIndex);
         suggestionButton.setAttribute("data-index", String(index));
         suggestionButton.addEventListener("mousedown", (event) => {
             event.preventDefault();
@@ -233,20 +226,25 @@ function renderSuggestions(suggestions) {
     elements.searchInput.setAttribute("aria-expanded", "true");
 }
 
-function updateSuggestionHighlight() {
-    if (!elements.searchSuggestions) {
+/* Applies one suggestion back into the input field */
+function selectSuggestion(countryName) {
+    if (!elements.searchInput) {
         return;
     }
 
-    const suggestionItems = elements.searchSuggestions.querySelectorAll(".suggestion-item");
-
-    suggestionItems.forEach((item, index) => {
-        item.classList.toggle("is-active", index === activeSuggestionIndex);
-    });
+    elements.searchInput.value = countryName;
+    setError();
+    hideSuggestions();
+    updateSearchButtonState();
 }
 
-function updateSuggestions() {
-    const inputValue = normalizeCountryName(elements.searchInput?.value ?? "").toLowerCase();
+/* Rebuilds the suggestion list from the current input text */
+function showSuggestions() {
+    let inputValue = "";
+
+    if (elements.searchInput) {
+        inputValue = normalizeCountryName(elements.searchInput.value).toLowerCase();
+    }
 
     if (!inputValue || !countryNames.length) {
         hideSuggestions();
@@ -269,7 +267,9 @@ function updateSuggestions() {
         }
     });
 
-    renderSuggestions(startsWithMatches.concat(includesMatches).slice(0, MAX_SUGGESTIONS));
+    visibleSuggestions = startsWithMatches.concat(includesMatches).slice(0, MAX_SUGGESTIONS);
+    activeSuggestionIndex = -1;
+    renderSuggestions();
 }
 
 /* Sends the user to the country page if the input is usable */
@@ -279,14 +279,18 @@ function redirectToCountry(countryName) {
 
     if (!normalizedCountryName) {
         setError("Please enter a country name.");
-        elements.searchInput?.focus();
+        if (elements.searchInput) {
+            elements.searchInput.focus();
+        }
         return;
     }
 
     if (!matchedCountryName) {
         setError("Please choose a country from the list.");
-        updateSuggestions();
-        elements.searchInput?.focus();
+        showSuggestions();
+        if (elements.searchInput) {
+            elements.searchInput.focus();
+        }
         return;
     }
 
@@ -296,11 +300,16 @@ function redirectToCountry(countryName) {
 
 /* Reads the current input value and starts the search flow */
 function handleSearch() {
-    const countryName = elements.searchInput?.value ?? "";
+    let countryName = "";
+
+    if (elements.searchInput) {
+        countryName = elements.searchInput.value;
+    }
 
     redirectToCountry(countryName);
 }
 
+/* Starts the Leaflet world map only once */
 function ensureWorldMap() {
     if (worldMap || !elements.worldMapContainer || !window.L) {
         return;
@@ -327,12 +336,14 @@ function ensureWorldMap() {
     worldMarkersLayer = window.L.layerGroup().addTo(worldMap);
 }
 
+/* Picks one marker color family from the shared palette */
 function getMarkerPalette(countryName) {
     const paletteIndex = [...countryName].reduce((total, char) => total + char.charCodeAt(0), 0) % markerPalette.length;
 
     return markerPalette[paletteIndex];
 }
 
+/* Builds the custom country marker with its flag and color shell */
 function createCountryMarkerIcon(countryName, flagUrl) {
     const { start, end, ring } = getMarkerPalette(countryName);
     const hasFlag = Boolean(flagUrl);
@@ -358,11 +369,15 @@ function createCountryMarkerIcon(countryName, flagUrl) {
     });
 }
 
+/* Places all clickable country markers on the world map */
 function renderCountryMarkers(countries) {
     ensureWorldMap();
 
     if (!worldMap || !worldMarkersLayer) {
-        return setMapFeedback("Map could not be loaded.");
+        if (elements.mapFeedback) {
+            elements.mapFeedback.textContent = "Map could not be loaded.";
+        }
+        return;
     }
 
     worldMarkersLayer.clearLayers();
@@ -384,19 +399,28 @@ function renderCountryMarkers(countries) {
             .addTo(worldMarkersLayer);
     });
 
-    window.setTimeout(() => worldMap.invalidateSize(), 0);
-    setMapFeedback("Showing " + countries.length + " capital markers. Click one to explore it.");
+    worldMap.invalidateSize();
+
+    if (elements.mapFeedback) {
+        elements.mapFeedback.textContent = "Showing " + countries.length + " capital markers. Click one to explore it.";
+    }
 }
 
 /* Connects the search input and button to the same redirect logic */
 function bindSearchControls() {
-    elements.searchButton?.addEventListener("click", handleSearch);
+    if (elements.searchButton) {
+        elements.searchButton.addEventListener("click", handleSearch);
+    }
 
-    elements.searchInput?.addEventListener("keydown", (event) => {
+    if (!elements.searchInput) {
+        return;
+    }
+
+    elements.searchInput.addEventListener("keydown", (event) => {
         if (event.key === "ArrowDown" && visibleSuggestions.length) {
             event.preventDefault();
             activeSuggestionIndex = (activeSuggestionIndex + 1) % visibleSuggestions.length;
-            updateSuggestionHighlight();
+            renderSuggestions();
             return;
         }
 
@@ -409,7 +433,7 @@ function bindSearchControls() {
                 activeSuggestionIndex -= 1;
             }
 
-            updateSuggestionHighlight();
+            renderSuggestions();
             return;
         }
 
@@ -432,22 +456,23 @@ function bindSearchControls() {
         handleSearch();
     });
 
-    elements.searchInput?.addEventListener("input", () => {
-        clearError();
-        updateSuggestions();
+    elements.searchInput.addEventListener("input", () => {
+        setError();
+        showSuggestions();
         updateSearchButtonState();
     });
 
-    elements.searchInput?.addEventListener("blur", () => {
+    elements.searchInput.addEventListener("blur", () => {
         window.setTimeout(hideSuggestions, 100);
     });
 
-    elements.searchInput?.addEventListener("focus", () => {
-        updateSuggestions();
+    elements.searchInput.addEventListener("focus", () => {
+        showSuggestions();
         updateSearchButtonState();
     });
 }
 
+/* Loads the country data used by both the map and the autocomplete list */
 async function loadWorldMap() {
     if (!elements.worldMapContainer) {
         return;
@@ -455,12 +480,22 @@ async function loadWorldMap() {
 
     try {
         const countries = await fetchCountriesForMap();
-        countryNames = [...new Set(countries.map((country) => country.name))].sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
+        const uniqueCountryNames = [];
+
+        countries.forEach((country) => {
+            if (!uniqueCountryNames.includes(country.name)) {
+                uniqueCountryNames.push(country.name);
+            }
+        });
+
+        countryNames = uniqueCountryNames.sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
         renderCountryMarkers(countries);
         updateSearchButtonState();
-        updateSuggestions();
+        showSuggestions();
     } catch {
-        setMapFeedback("The map is unavailable right now.");
+        if (elements.mapFeedback) {
+            elements.mapFeedback.textContent = "The map is unavailable right now.";
+        }
     }
 }
 
@@ -473,4 +508,6 @@ renderRecentSearches();
 bindSearchControls();
 loadHeroGlobe();
 loadWorldMap();
+
+/* Keeps the decorative globe responsive after the page finishes loading */
 window.addEventListener("resize", resizeHeroGlobe);

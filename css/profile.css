@@ -1,14 +1,17 @@
+/* Centers the profile page content and keeps it comfortably narrow */
 .profile-page {
     max-width: 1000px;
     margin: 50px auto 80px;
     padding: 0 20px;
 }
 
+/* Intro text block at the top of the profile page */
 .profile-hero {
     text-align: center;
     margin-bottom: 32px;
 }
 
+/* Small uppercase label above the main profile heading */
 .profile-kicker {
     color: var(--brown);
     font-weight: 700;
@@ -18,22 +21,26 @@
     margin-bottom: 8px;
 }
 
+/* Main page heading for the profile screen */
 .profile-hero h2 {
     font-size: var(--text-hero);
     margin-bottom: 10px;
 }
 
+/* Supporting line shown under the main profile heading */
 .profile-hero p:last-child {
     font-size: 1.04rem;
     color: rgba(46, 50, 48, 0.8);
 }
 
+/* Main two-card layout used for the profile overview area */
 .profile-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
 }
 
+/* Shared card container used across the profile page */
 .profile-card {
     background: var(--surface-main);
     border: 1px solid var(--border-soft);
@@ -42,16 +49,19 @@
     box-shadow: var(--shadow-soft);
 }
 
+/* Section titles inside the profile cards */
 .profile-card h3 {
     font-size: var(--text-section);
     margin-bottom: 18px;
 }
 
+/* Two-by-two layout used for saved countries and places */
 .profile-storage-grid {
     margin-top: 24px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Definition list styling for the account snapshot block */
 .profile-list {
     display: grid;
     gap: 16px;
@@ -68,6 +78,7 @@
     color: var(--dark-gray);
 }
 
+/* Short checklist shown in the next-steps card */
 .profile-actions {
     margin: 0 0 22px;
     padding-left: 20px;
@@ -83,17 +94,20 @@
     text-decoration: none;
 }
 
+/* Flexible chip layout used for saved country links */
 .profile-tag-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
 
+/* Simple vertical list used when saved place cards stack */
 .profile-list-block {
     display: grid;
     gap: 10px;
 }
 
+/* Rounded country chip used in favorites and travel lists */
 .profile-tag {
     display: inline-flex;
     align-items: center;
@@ -105,6 +119,7 @@
     text-decoration: none;
 }
 
+/* Small saved place card shown in the favorite places section */
 .profile-place-item {
     padding: 14px 16px;
     border-radius: 14px;
@@ -123,11 +138,13 @@
     font-size: var(--text-small);
 }
 
+/* Fallback text shown when one saved section is empty */
 .profile-empty {
     color: rgba(129, 105, 74, 0.78);
 }
 
 
+/* Stacks the saved sections into one column on smaller screens */
 @media (max-width: 768px) {
     .profile-hero h2 {
         font-size: 1.95rem;

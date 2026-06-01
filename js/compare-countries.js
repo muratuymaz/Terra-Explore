@@ -11,16 +11,6 @@ const elements = {
     countryOptions: document.querySelector("#countryOptions")
 };
 
-/* Shows helper text under the comparison form */
-function setCompareFeedback(message = "") {
-    if (!elements.compareFeedback) {
-        return;
-    }
-
-    elements.compareFeedback.textContent = message;
-    elements.compareFeedback.hidden = !message;
-}
-
 /* Fills the datalist used by the country comparison inputs */
 function renderCountryOptions(countries) {
     if (!elements.countryOptions) {
@@ -65,40 +55,63 @@ function renderCountryComparison(countryOne, countryTwo) {
 
 /* Loads both selected countries and shows their key details together */
 async function handleCompareCountries() {
-    const firstCountryName = (elements.compareCountryOne?.value ?? "")
-        .trim()
-        .split(" ")
-        .filter(Boolean)
-        .join(" ");
-    const secondCountryName = (elements.compareCountryTwo?.value ?? "")
-        .trim()
-        .split(" ")
-        .filter(Boolean)
-        .join(" ");
+    let firstCountryName = "";
+    let secondCountryName = "";
+
+    if (elements.compareCountryOne) {
+        firstCountryName = elements.compareCountryOne.value
+            .trim()
+            .split(" ")
+            .filter(Boolean)
+            .join(" ");
+    }
+
+    if (elements.compareCountryTwo) {
+        secondCountryName = elements.compareCountryTwo.value
+            .trim()
+            .split(" ")
+            .filter(Boolean)
+            .join(" ");
+    }
 
     if (!firstCountryName || !secondCountryName) {
         elements.compareResult.hidden = true;
-        setCompareFeedback("Please choose two countries to compare.");
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "Please choose two countries to compare.";
+            elements.compareFeedback.hidden = false;
+        }
         return;
     }
 
     if (firstCountryName.toLowerCase() === secondCountryName.toLowerCase()) {
         elements.compareResult.hidden = true;
-        setCompareFeedback("Please choose two different countries.");
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "Please choose two different countries.";
+            elements.compareFeedback.hidden = false;
+        }
         return;
     }
 
     try {
-        setCompareFeedback("Loading comparison...");
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "Loading comparison...";
+            elements.compareFeedback.hidden = false;
+        }
         const [countryOne, countryTwo] = await Promise.all([
             fetchCountryByName(firstCountryName),
             fetchCountryByName(secondCountryName)
         ]);
-        setCompareFeedback();
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "";
+            elements.compareFeedback.hidden = true;
+        }
         renderCountryComparison(countryOne, countryTwo);
     } catch {
         elements.compareResult.hidden = true;
-        setCompareFeedback("The comparison could not be loaded right now.");
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "The comparison could not be loaded right now.";
+            elements.compareFeedback.hidden = false;
+        }
     }
 }
 
@@ -106,16 +119,30 @@ async function handleCompareCountries() {
 async function loadCountryOptions() {
     try {
         const countries = await fetchCountriesForMap();
-        const countryNames = [...new Set(countries.map((country) => country.name))]
-            .sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
+        const countryNames = [];
+
+        countries.forEach((country) => {
+            if (!countryNames.includes(country.name)) {
+                countryNames.push(country.name);
+            }
+        });
+
+        countryNames.sort((firstCountry, secondCountry) => firstCountry.localeCompare(secondCountry));
 
         renderCountryOptions(countryNames);
     } catch {
-        setCompareFeedback("Country suggestions are unavailable right now.");
+        if (elements.compareFeedback) {
+            elements.compareFeedback.textContent = "Country suggestions are unavailable right now.";
+            elements.compareFeedback.hidden = false;
+        }
     }
 }
 
 /* Starts the page behavior for the comparison screen */
 initHeaderAuth();
-elements.compareButton?.addEventListener("click", handleCompareCountries);
+
+if (elements.compareButton) {
+    elements.compareButton.addEventListener("click", handleCompareCountries);
+}
+
 loadCountryOptions();

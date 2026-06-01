@@ -49,4 +49,7 @@ function handleLoginSubmit(event) {
 }
 
 initHeaderAuth();
-loginElements.form?.addEventListener("submit", handleLoginSubmit);
+
+if (loginElements.form) {
+    loginElements.form.addEventListener("submit", handleLoginSubmit);
+}

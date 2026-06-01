@@ -1,12 +1,22 @@
 /* Reads and trims a query parameter from the current page URL */
 export function getQueryParam(paramName) {
-    const paramValue = new URLSearchParams(window.location.search).get(paramName);
+    const queryString = window.location.search.replace("?", "");
 
-    if (!paramValue) {
+    if (!queryString) {
         return "";
     }
 
-    return paramValue.trim();
+    const queryParts = queryString.split("&");
+
+    for (const queryPart of queryParts) {
+        const [key, value] = queryPart.split("=");
+
+        if (key === paramName && value) {
+            return decodeURIComponent(value).trim();
+        }
+    }
+
+    return "";
 }
 
 /* Formats numeric values for the UI */
@@ -57,22 +67,49 @@ export function toTitleCase(value) {
 
 /* Normalizes text so small spelling and accent differences compare more reliably */
 export function normalizeText(value) {
-    return value
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/_/g, " ")
-        .replace(/[^\w\s]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+    let normalizedValue = String(value || "").trim().toLowerCase().replaceAll("_", " ");
+    const specialCharacters = "çğıöşüáàâéèêíìîóòôúùû";
+    const plainCharacters = "cgiosuaaaeeeiiiooouuu";
+
+    normalizedValue = normalizedValue
+        .split("")
+        .map((character) => {
+            const specialIndex = specialCharacters.indexOf(character);
+
+            if (specialIndex >= 0) {
+                return plainCharacters[specialIndex];
+            }
+
+            return character;
+        })
+        .join("");
+
+    normalizedValue = normalizedValue
+        .split("")
+        .map((character) => {
+            const isLowerLetter = character >= "a" && character <= "z";
+            const isNumber = character >= "0" && character <= "9";
+
+            if (isLowerLetter || isNumber || character === " ") {
+                return character;
+            }
+
+            return " ";
+        })
+        .join("");
+
+    return normalizedValue
+        .split(" ")
+        .filter(Boolean)
+        .join(" ");
 }
 
 /* Removes generic tokens from a normalized label and falls back to the full normalized text */
-export function cleanPlaceName(value, ignoredTokens = new Set()) {
+export function cleanPlaceName(value, ignoredTokens = []) {
     const normalizedValue = normalizeText(value);
     const meaningfulTokens = normalizedValue
         .split(" ")
-        .filter((token) => token && !ignoredTokens.has(token));
+        .filter((token) => token && !ignoredTokens.includes(token));
 
     return meaningfulTokens.join(" ") || normalizedValue;
 }
@@ -150,15 +187,15 @@ export function setCacheValue(cacheConfig, entryKey, data) {
 /* Loads JSONP data for endpoints that do not allow cross-origin fetch requests */
 export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
     return new Promise((resolve, reject) => {
-        let resolvedCallbackName = callbackName;
-        let isDone = false;
-
-        if (!resolvedCallbackName) {
-            resolvedCallbackName = "jsonpCallback" + Date.now();
-        }
-
         const script = document.createElement("script");
+        const resolvedCallbackName = callbackName || "jsonpCallback" + Date.now();
+        let separator = "?";
+
+        if (url.includes("?")) {
+            separator = "&";
+        }
         let timeoutId = 0;
+        let isDone = false;
 
         const finalize = () => {
             script.remove();
@@ -197,12 +234,6 @@ export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
         };
 
         script.async = true;
-        let separator = "?";
-
-        if (url.includes("?")) {
-            separator = "&";
-        }
-
         script.src = url + separator + callbackParam + "=" + resolvedCallbackName;
         document.head.append(script);
     });

@@ -47,9 +47,9 @@ async function fetchJson(url, options = {}) {
 }
 
 /* Requests top city data from one GeoNames endpoint */
-async function fetchGeoNamesCities(endpoint, searchParams, callbackSuffix) {
+async function fetchGeoNamesCities(endpoint, queryString, callbackSuffix) {
     const response = await fetchJsonp(
-        endpoint + "?" + searchParams.toString(),
+        endpoint + "?" + queryString,
         geoNamesCallbackParam,
         "terraExploreGeoNamesCallback" + Date.now() + callbackSuffix
     );
@@ -152,15 +152,15 @@ async function fetchTopCitiesByCountry(countryCode, limit = cityCount) {
         return cachedCities.slice(0, limit);
     }
 
-    const searchParams = new URLSearchParams({
-        country: countryCode.toUpperCase(),
-        featureClass: "P",
-        cities: "cities15000",
-        maxRows: String(cityCount * geoNamesMaxRowsMultiplier),
-        orderby: "population",
-        lang: geoNamesLanguage,
-        username: geoNamesUsername
-    });
+    const searchParams = [
+        "country=" + countryCode.toUpperCase(),
+        "featureClass=P",
+        "cities=cities15000",
+        "maxRows=" + String(cityCount * geoNamesMaxRowsMultiplier),
+        "orderby=population",
+        "lang=" + geoNamesLanguage,
+        "username=" + geoNamesUsername
+    ].join("&");
 
     try {
         const cities = await fetchGeoNamesCities(geoNamesEndpoint, searchParams, 0);
@@ -176,133 +176,19 @@ async function fetchTopCitiesByCountry(countryCode, limit = cityCount) {
     }
 }
 
-const HISTORICAL_PLACE_KIND_TOKENS = new Set([
-    "archaeology",
-    "archaeological",
-    "historic",
-    "historical",
-    "heritage",
-    "castle",
-    "castles",
-    "fort",
-    "fortress",
-    "fortifications",
-    "ruins",
-    "palace",
-    "palaces",
-    "monument",
-    "monuments",
-    "memorial",
-    "memorials",
-    "museum",
-    "museums",
-    "church",
-    "churches",
-    "cathedral",
-    "cathedrals",
-    "mosque",
-    "mosques",
-    "temple",
-    "temples",
-    "synagogue",
-    "synagogues"
-]);
-
-function isHistoricalPlace(place) {
-    const kinds = String(place.kinds || "")
-        .split(",")
-        .map((kind) => kind.trim().toLowerCase())
-        .filter(Boolean);
-
-    return kinds.some((kind) => Array.from(HISTORICAL_PLACE_KIND_TOKENS).some((token) => kind.includes(token)));
-}
-
 /* Fetches popular place candidates around a city center */
 async function fetchPopularPlacesNearCity(city) {
-    const searchParams = new URLSearchParams({
-        apikey: openTripMapApiKey,
-        radius: String(cityRadiusInMeters),
-        lon: String(city.lng),
-        lat: String(city.lat),
-        format: "json",
-        limit: String(cityFetchLimit),
-        rate: popularPlacesRate
-    });
+    const searchParams = [
+        "apikey=" + openTripMapApiKey,
+        "radius=" + String(cityRadiusInMeters),
+        "lon=" + String(city.lng),
+        "lat=" + String(city.lat),
+        "format=json",
+        "limit=" + String(cityFetchLimit),
+        "rate=" + popularPlacesRate
+    ].join("&");
 
-    return fetchJson(API_BASE_URLS.openTripMap + "/radius?" + searchParams.toString());
-}
-
-/* Fetches the best matching historical places for the selected country */
-export async function fetchHistoricalPlacesByCountry(country, limit = 5) {
-    if (!openTripMapApiKey) {
-        throw new Error("Historical places are unavailable right now.");
-    }
-
-    let topCities = [];
-
-    try {
-        topCities = await fetchTopCitiesByCountry(country.countryCode, Math.max(limit, cityCount * 3));
-    } catch {
-        throw new Error("Historical places could not be loaded right now.");
-    }
-
-    if (!topCities.length) {
-        throw new Error("Historical places could not be found for this country.");
-    }
-
-    const seenPlaceIds = new Set();
-    const seenPlaceNamesByCity = new Map();
-    const historicalPlaces = [];
-
-    try {
-        for (const [cityIndex, city] of topCities.entries()) {
-            const cityPlaces = await fetchPopularPlacesNearCity(city);
-            const citySeenNames = seenPlaceNamesByCity.get(city.name) || [];
-            const rankedCityPlaces = cityPlaces
-                .filter((place) => {
-                    const kinds = (place.kinds || "").split(",");
-                    const placeName = (place.name || "").trim();
-
-                    return !seenPlaceIds.has(place.xid)
-                        && Boolean(placeName)
-                        && !kinds.some((kind) => excludedKinds.has(kind))
-                        && isHistoricalPlace(place);
-                })
-                .sort((firstPlace, secondPlace) => (secondPlace.rate || 0) - (firstPlace.rate || 0));
-            const cityLimit = cityResultDistribution[cityIndex] || 0;
-            let addedPlaceCount = 0;
-
-            for (const place of rankedCityPlaces) {
-                if (addedPlaceCount >= cityLimit || historicalPlaces.length >= limit) {
-                    break;
-                }
-
-                const normalizedPlaceName = cleanPlaceName(place.name || "", genericNameTokens);
-
-                if (!normalizedPlaceName || isSimilarName(citySeenNames, normalizedPlaceName)) {
-                    continue;
-                }
-
-                seenPlaceIds.add(place.xid);
-                citySeenNames.push(normalizedPlaceName);
-                seenPlaceNamesByCity.set(city.name, citySeenNames);
-                historicalPlaces.push({
-                    id: place.xid,
-                    name: place.name,
-                    kinds: place.kinds || "",
-                    sourceCity: city.name,
-                    lat: Number(place.point && place.point.lat),
-                    lng: Number(place.point && place.point.lon),
-                    rate: Number(place.rate) || 0
-                });
-                addedPlaceCount += 1;
-            }
-        }
-    } catch {
-        throw new Error("Historical places could not be loaded right now.");
-    }
-
-    return historicalPlaces;
+    return fetchJson(API_BASE_URLS.openTripMap + "/radius?" + searchParams);
 }
 
 /* Fetches one country by name from REST Countries */
@@ -328,6 +214,7 @@ export async function fetchCountryByName(countryName) {
     }
 }
 
+/* Loads the country list used by the home map and comparison inputs */
 export async function fetchCountriesForMap() {
     const fields = "name,capital,capitalInfo,latlng,flags";
     const countries = await fetchJson(API_BASE_URLS.restCountries + "/all?fields=" + fields);
@@ -405,20 +292,20 @@ export async function fetchCountryBackgroundImage(country) {
         searchQuery = preferredCity + " " + countryName + " landmark travel";
     }
 
-    const searchParams = new URLSearchParams({
-        key: pixabayApiKey,
-        q: searchQuery,
-        image_type: "photo",
-        orientation: "horizontal",
-        category: "places",
-        safesearch: "true",
-        order: "popular",
-        per_page: "3"
-    });
+    const searchParams = [
+        "key=" + pixabayApiKey,
+        "q=" + encodeURIComponent(searchQuery),
+        "image_type=photo",
+        "orientation=horizontal",
+        "category=places",
+        "safesearch=true",
+        "order=popular",
+        "per_page=3"
+    ].join("&");
     let hits = [];
 
     try {
-        ({ hits = [] } = await fetchJson(API_BASE_URLS.pixabay + "?" + searchParams.toString()));
+        ({ hits = [] } = await fetchJson(API_BASE_URLS.pixabay + "?" + searchParams));
     } catch {
         return null;
     }
@@ -462,22 +349,22 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
         throw new Error("Popular places could not be found for this country.");
     }
 
-    const seenPlaceIds = new Set();
-    const seenPlaceNamesByCity = new Map();
+    const seenPlaceIds = [];
+    const seenPlaceNamesByCity = {};
     const popularPlaces = [];
 
     try {
         for (const [cityIndex, city] of topCities.entries()) {
             const cityPlaces = await fetchPopularPlacesNearCity(city);
-            const citySeenNames = seenPlaceNamesByCity.get(city.name) || [];
+            const citySeenNames = seenPlaceNamesByCity[city.name] || [];
             const rankedCityPlaces = cityPlaces
                 .filter((place) => {
                     const kinds = (place.kinds || "").split(",");
                     const placeName = (place.name || "").trim();
 
-                    return !seenPlaceIds.has(place.xid)
+                    return !seenPlaceIds.includes(place.xid)
                         && Boolean(placeName)
-                        && !kinds.some((kind) => excludedKinds.has(kind));
+                        && !kinds.some((kind) => excludedKinds.includes(kind));
                 })
                 .sort((firstPlace, secondPlace) => (secondPlace.rate || 0) - (firstPlace.rate || 0));
             const cityLimit = cityResultDistribution[cityIndex] || 0;
@@ -494,9 +381,9 @@ export async function fetchPopularPlacesByCountry(country, limit = POPULAR_PLACE
                     continue;
                 }
 
-                seenPlaceIds.add(place.xid);
+                seenPlaceIds.push(place.xid);
                 citySeenNames.push(normalizedPlaceName);
-                seenPlaceNamesByCity.set(city.name, citySeenNames);
+                seenPlaceNamesByCity[city.name] = citySeenNames;
                 popularPlaces.push({
                     id: place.xid,
                     name: place.name,

@@ -41,14 +41,14 @@ export const POPULAR_PLACES_CONFIG = {
     cityResultDistribution: [5, 4],
     totalLimit: 9,
     rate: "3",
-    excludedKinds: new Set([
+    excludedKinds: [
         "battlefields",
         "settlements",
         "adult",
         "restaurants",
         "shops"
-    ]),
-    genericNameTokens: new Set([
+    ],
+    genericNameTokens: [
         "monument",
         "mosque",
         "church",
@@ -56,5 +56,5 @@ export const POPULAR_PLACES_CONFIG = {
         "complex",
         "camii",
         "cami"
-    ])
+    ]
 };
