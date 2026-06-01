@@ -1,9 +1,9 @@
-const USER_STORAGE_KEY = "terraExploreUser";
+const REGISTERED_USER_STORAGE_KEY = "terraExploreRegisteredUser";
+const SESSION_USER_STORAGE_KEY = "terraExploreSessionUser";
 
-/* Reads the locally saved user from browser storage */
-export function getCurrentUser() {
+function readStoredUser(storage, key) {
     try {
-        const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+        const storedUser = storage.getItem(key);
 
         if (!storedUser) {
             return null;
@@ -15,22 +15,51 @@ export function getCurrentUser() {
     }
 }
 
-/* Saves the current user so the profile flow can stay visible across pages */
-export function saveCurrentUser(user) {
+function writeStoredUser(storage, key, user) {
     try {
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+        storage.setItem(key, JSON.stringify(user));
     } catch {
         /* Ignore storage errors so the app can keep working. */
     }
 }
 
-/* Clears the locally saved user during logout */
-export function clearCurrentUser() {
+function clearStoredUser(storage, key) {
     try {
-        localStorage.removeItem(USER_STORAGE_KEY);
+        storage.removeItem(key);
     } catch {
         /* Ignore storage errors so the app can keep working. */
     }
+}
+
+/* Reads the saved account from browser storage */
+export function getRegisteredUser() {
+    const localUser = readStoredUser(localStorage, REGISTERED_USER_STORAGE_KEY);
+
+    if (localUser) {
+        return localUser;
+    }
+
+    return readStoredUser(localStorage, "terraExploreUser");
+}
+
+/* Reads the current session user from browser storage */
+export function getCurrentUser() {
+    return readStoredUser(sessionStorage, SESSION_USER_STORAGE_KEY);
+}
+
+/* Saves the registered account in local storage */
+export function saveRegisteredUser(user) {
+    writeStoredUser(localStorage, REGISTERED_USER_STORAGE_KEY, user);
+}
+
+/* Saves the current session user so the profile flow can stay visible across pages */
+export function saveCurrentUser(user) {
+    writeStoredUser(sessionStorage, SESSION_USER_STORAGE_KEY, user);
+}
+
+/* Clears the current session during logout */
+export function clearCurrentUser() {
+    clearStoredUser(sessionStorage, SESSION_USER_STORAGE_KEY);
 }
 
 /* Swaps the default header action with profile and logout controls */

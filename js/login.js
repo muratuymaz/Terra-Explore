@@ -1,4 +1,4 @@
-import { getCurrentUser, initHeaderAuth, saveCurrentUser } from "./auth.js";
+import { getRegisteredUser, initHeaderAuth, saveCurrentUser } from "./auth.js";
 
 const loginElements = {
     form: document.querySelector("#loginForm"),
@@ -16,7 +16,7 @@ function handleLoginSubmit(event) {
     const formData = new FormData(loginElements.form);
     const enteredEmail = String(formData.get("email") || "").trim();
     const enteredPassword = String(formData.get("password") || "");
-    const savedUser = getCurrentUser();
+    const savedUser = getRegisteredUser();
 
     if (!savedUser) {
         if (loginElements.feedback) {

@@ -1,4 +1,4 @@
-import { getCurrentUser, initHeaderAuth, saveCurrentUser } from "./auth.js";
+import { getCurrentUser, initHeaderAuth, saveCurrentUser, saveRegisteredUser } from "./auth.js";
 import {
     getFavoriteCountries,
     getFavoritePlaces,
@@ -40,6 +40,7 @@ function handleSignupSubmit(event) {
         password: String(formData.get("password") || "")
     };
 
+    saveRegisteredUser(user);
     saveCurrentUser(user);
 
     if (signupElements.feedback) {
