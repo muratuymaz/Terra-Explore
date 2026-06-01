@@ -20,9 +20,72 @@
 /* Sets the foundation for typography and page background */
 body {
     font-family: 'Nunito Sans', sans-serif;
-    background-color: var(--cream);
+    background-color: #f1eadf;
     color: var(--dark-gray);
     line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Keep page content above the texture layer */
+body > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Mouse-following background texture */
+.global-texture-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.38;
+    background:
+        radial-gradient(circle at var(--texture-x, 50%) var(--texture-y, 50%), rgba(46, 50, 48, 0.18), transparent 12%),
+        repeating-linear-gradient(135deg, rgba(46, 50, 48, 0.06) 0 2px, transparent 2px 12px),
+        repeating-linear-gradient(45deg, rgba(74, 124, 89, 0.04) 0 1px, transparent 1px 16px),
+        linear-gradient(180deg, rgba(250, 246, 240, 0.03), rgba(46, 50, 48, 0.02));
+    mix-blend-mode: multiply;
+}
+
+.global-texture-layer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 18% 24%, rgba(46, 50, 48, 0.08) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 66% 46%, rgba(46, 50, 48, 0.07) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 40% 72%, rgba(46, 50, 48, 0.08) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 82% 78%, rgba(46, 50, 48, 0.07) 0 1px, transparent 1.5px),
+        repeating-linear-gradient(0deg, rgba(46, 50, 48, 0.045) 0 1px, transparent 1px 34px),
+        repeating-linear-gradient(90deg, rgba(46, 50, 48, 0.03) 0 1px, transparent 1px 34px);
+    background-size: 150px 150px;
+    opacity: 0.42;
+}
+
+.global-texture-layer::after {
+    content: "";
+    position: absolute;
+    left: var(--texture-x, 50%);
+    top: var(--texture-y, 50%);
+    width: 180px;
+    height: 180px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 35%, rgba(74, 124, 89, 0.30), rgba(46, 50, 48, 0.22) 42%, rgba(24, 28, 26, 0.12) 62%, transparent 74%),
+        radial-gradient(circle at 55% 55%, rgba(250, 246, 240, 0.12), transparent 60%);
+    box-shadow:
+        0 0 28px rgba(46, 50, 48, 0.32),
+        inset 0 0 20px rgba(255, 255, 255, 0.08);
+    filter: blur(0.4px);
+    opacity: 0.96;
+}
+
+.global-texture-layer::after,
+.global-texture-layer::before,
+.global-texture-layer {
+    transition: opacity 0.25s ease;
 }
 
 /* Applies the specific serif font and primary color to all headings */
