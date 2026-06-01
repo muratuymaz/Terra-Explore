@@ -36,7 +36,8 @@ function handleSignupSubmit(event) {
     const user = {
         name: String(formData.get("fullName") || "").trim(),
         country: String(formData.get("country") || "").trim(),
-        email: String(formData.get("email") || "").trim()
+        email: String(formData.get("email") || "").trim(),
+        password: String(formData.get("password") || "")
     };
 
     saveCurrentUser(user);

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraExplore | Login</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/signup.css">
+</head>
+<body>
+    <!-- Top menu stays simple like the other pages -->
+    <header class="menu">
+        <div class="logo">
+            <a href="index.html"><h1>Terra Explore</h1></a>
+        </div>
+
+        <nav class="menu-links">
+            <a href="#">About Us</a>
+            <a href="compare-countries.html">Compare Countries</a>
+        </nav>
+
+        <div class="menu-actions">
+            <a class="button-light" href="index.html">Back Home</a>
+        </div>
+    </header>
+
+    <!-- Login content -->
+    <main class="signup-page">
+        <section class="signup-hero">
+            <h2>Welcome Back</h2>
+            <p>Log in with the same simple demo account you created before.</p>
+        </section>
+
+        <section class="signup-grid">
+            <form id="loginForm" class="signup-card" aria-label="Login form">
+                <h3>Login</h3>
+
+                <!-- Login fields for the local demo flow -->
+                <label class="field">
+                    <span>Email Address</span>
+                    <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </label>
+
+                <label class="field">
+                    <span>Password</span>
+                    <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                </label>
+
+                <!-- Action buttons for login -->
+                <div class="signup-actions">
+                    <button type="submit" class="button">Login</button>
+                    <a class="button-light" href="signup.html">Sign Up</a>
+                </div>
+
+                <p id="loginFeedback" class="signup-feedback" hidden aria-live="polite"></p>
+                <p class="form-note">This login uses browser storage only. No database is used.</p>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
+    </footer>
+
+    <script type="module" src="js/login.js"></script>
+</body>
+</html>

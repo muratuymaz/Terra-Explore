@@ -62,6 +62,19 @@
     color: rgba(46, 50, 48, 0.7);
 }
 
+/* Button row under the form */
+.signup-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.signup-actions .button,
+.signup-actions .button-light {
+    flex: 1;
+    text-align: center;
+}
+
 .signup-feedback {
     margin-top: 14px;
     padding: 12px 14px;
@@ -115,5 +128,9 @@
 @media (max-width: 768px) {
     .signup-hero h2 {
         font-size: 28px;
+    }
+
+    .signup-actions {
+        flex-direction: column;
     }
 }
