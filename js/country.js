@@ -328,7 +328,7 @@ function setPopularPlacesLoadingState(isLoading) {
 
 /* Renders the basic country details on the page */
 function renderCountryDetails(country) {
-    document.title = "TerraExplore | " + country.name;
+    document.title = "Terra Explore | " + country.name;
     selectedCountry = country;
     elements.countryName.textContent = country.name;
     elements.capitalText.textContent = country.capital;

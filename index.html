@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TerraExplore | Discover the World</title>
+    <title>Terra Explore | Discover the World</title>
     <link rel="icon" type="image/svg+xml" sizes="any" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234e835f'/%3E%3Ctext x='50%25' y='53%25' text-anchor='middle' dominant-baseline='middle' font-size='36'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E">
     <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234e835f'/%3E%3Ctext x='50%25' y='53%25' text-anchor='middle' dominant-baseline='middle' font-size='36'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="css/global.css">
@@ -37,34 +37,40 @@
     </header>
 
     <main class="home-page">
-        <!-- Search area for direct country lookup -->
+        <!-- Search area that introduces the main globe and lookup flow as one scene -->
         <section class="search-area">
-            <h2>Find Your Next Destination</h2>
-            <p>Enter a country name to explore its culture, details, and popular places.</p>
+            <div class="search-copy">
+                <p class="search-kicker">Terra Explore</p>
+                <h2>Find Your Next Destination</h2>
+                <p>Enter a country name to explore its culture, details, and popular places.</p>
+                
+                <div class="search-box">
+                    <div class="search-input-group">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="e.g., Japan, Italy, Brazil..."
+                            autocomplete="off"
+                            aria-autocomplete="list"
+                            aria-controls="searchSuggestions"
+                            aria-expanded="false"
+                        >
+                        <div id="searchSuggestions" class="search-suggestions" hidden></div>
+                    </div>
+                    <button id="searchBtn" type="button" class="button">Explore</button>
+                </div>
+                <p id="errorMessage" class="error-text" hidden></p>
+            </div>
 
-            <!-- Decorative 3D globe that makes the landing area feel more travel-focused -->
-            <div class="hero-globe-stage" aria-hidden="true">
-                <div class="hero-globe-frame">
-                    <div id="heroGlobeContainer"></div>
+            <div class="search-visual">
+                <!-- Decorative 3D globe that makes the landing area feel more travel-focused -->
+                <div class="hero-globe-stage" aria-hidden="true">
+                    <div class="hero-globe-frame">
+                        <div id="heroGlobeContainer"></div>
+                    </div>
                 </div>
+                <p class="search-visual-note">Spin the globe, then jump into the country details below.</p>
             </div>
-            
-            <div class="search-box">
-                <div class="search-input-group">
-                    <input
-                        type="text"
-                        id="searchInput"
-                        placeholder="e.g., Japan, Italy, Brazil..."
-                        autocomplete="off"
-                        aria-autocomplete="list"
-                        aria-controls="searchSuggestions"
-                        aria-expanded="false"
-                    >
-                    <div id="searchSuggestions" class="search-suggestions" hidden></div>
-                </div>
-                <button id="searchBtn" type="button" class="button">Explore</button>
-            </div>
-            <p id="errorMessage" class="error-text" hidden></p>
         </section>
 
         <section class="recent-searches-panel">
@@ -103,7 +109,11 @@
     <script type="module" src="js/home.js"></script>
     
     <footer class="footer">
-        <p class="footer-text">&copy; 2026 Terra Explore. Developed for Web Technologies Course</p>
+        <div class="footer-text">
+            <span>Travel Discovery Web App</span>
+            <span>&copy; 2026 Terra Explore. Developed for Web Technologies Course</span>
+            <span>Kocaeli University</span>
+        </div>
     </footer>
 
 </body>

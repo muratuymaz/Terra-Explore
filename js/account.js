@@ -90,7 +90,7 @@ function fillProfile() {
             placeText = " from " + country;
         }
 
-        profileElements.subtitle.textContent = "Your TerraExplore profile is ready" + placeText + ". Start exploring your next destination.";
+        profileElements.subtitle.textContent = "Your Terra Explore profile is ready" + placeText + ". Start exploring your next destination.";
     }
 }
 
