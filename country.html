@@ -16,7 +16,7 @@
     >
 </head>
 <body id="countryBody">
-    <!-- Country page -->
+    <!-- Main header -->
     <header class="menu">
         <div class="logo">
             <a class="logo-link" href="index.html">
@@ -37,7 +37,7 @@
     </header>
 
     <main class="detail-page">
-        <!-- Main country summary with flag, facts, and saved actions -->
+        <!-- Country summary with flag, details, and actions -->
         <section id="countryInfo" class="country-card">
             <div class="flag-container">
                 <img id="countryFlag" src="" alt="Country Flag" hidden>
@@ -58,7 +58,7 @@
             </div>
         </section>
 
-        <!-- Leaflet map area focused on the selected country -->
+        <!-- Map area for the selected country -->
         <section class="country-map-area">
             <div class="country-map-header">
                 <h3>Explore This Country on the Map</h3>
@@ -67,7 +67,7 @@
             <div id="countryMap" aria-label="Country detail map"></div>
         </section>
 
-        <!-- Popular places call to action and generated result cards -->
+        <!-- Popular places area -->
         <section class="places-area">
             <p>Want to explore the most popular places across this country?</p>
             <button id="popularPlacesBtn" class="button" disabled>Show Popular Places</button>
@@ -83,7 +83,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""
     ></script>
-    <!-- Country page behavior, map state, and popular place loading -->
+    <!-- Country page behavior -->
     <script type="module" src="js/country.js"></script>
 </body>
 </html>

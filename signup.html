@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/signup.css">
 </head>
 <body>
-    <!-- Top menu stays the same as other pages -->
+    <!-- Main header -->
     <header class="menu">
         <div class="logo">
             <a class="logo-link" href="index.html">
@@ -24,7 +24,7 @@
             <a href="compare-countries.html">Compare Countries</a>
         </nav>
 
-        <!-- Header action area can switch to profile/logout after sign up -->
+        <!-- Header actions -->
         <div class="menu-actions" data-auth-menu>
             <a class="button-light" href="index.html">Back Home</a>
         </div>
@@ -32,19 +32,19 @@
 
     <!-- Main sign up content -->
     <main class="signup-page">
-        <!-- Short intro text for the page -->
+        <!-- Intro text -->
         <section class="signup-hero">
             <h2>Start Your Terra Explore Journey</h2>
             <p>Create a profile to save destinations, track favorite places, and plan your next adventure.</p>
         </section>
 
-        <!-- Two-column layout: form -->
+        <!-- Sign up form area -->
         <section class="signup-grid">
-            <!-- Sign up form card -->
+            <!-- Sign up card -->
             <form id="signupForm" class="signup-card" aria-label="Sign up form">
                 <h3>Create Your Account</h3>
 
-                <!-- Basic profile fields for the demo sign up flow -->
+                <!-- Profile fields -->
                 <label class="field">
                     <span>Full Name</span>
                     <input type="text" name="fullName" placeholder="e.g., Elif Demir" autocomplete="name" required>
@@ -65,19 +65,19 @@
                     <input type="text" name="country" placeholder="e.g., Turkey" autocomplete="country-name">
                 </label>
 
-                <!-- Action buttons for the demo flow -->
+                <!-- Main form actions -->
                 <div class="signup-actions">
                     <button type="submit" class="button">Create Account</button>
                     <a class="button-light" href="login.html">Login</a>
                 </div>
-                <!-- Short feedback message shown after a successful submit -->
+                <!-- Submit feedback -->
                 <p id="signupFeedback" class="signup-feedback" hidden aria-live="polite"></p>
                 <p class="form-note">By signing up, you agree to receive travel inspiration from Terra Explore.</p>
             </form>
         </section>
     </main>
 
-    <!-- Footer matches the home page style -->
+    <!-- Shared footer -->
     <footer class="footer">
         <div class="footer-text">
             <span>Travel Discovery Web App</span>

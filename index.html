@@ -16,7 +16,7 @@
     >
 </head>
 <body>
-    <!-- Main menu page -->
+    <!-- Main header -->
     <header class="menu">
         <div class="logo">
             <a class="logo-link" href="index.html">
@@ -37,7 +37,7 @@
     </header>
 
     <main class="home-page">
-        <!-- Search area that introduces the main globe and lookup flow as one scene -->
+        <!-- Main landing section with search and globe -->
         <section class="search-area">
             <div class="search-copy">
                 <p class="search-kicker">Terra Explore</p>
@@ -63,7 +63,7 @@
             </div>
 
             <div class="search-visual">
-                <!-- Decorative 3D globe that makes the landing area feel more travel-focused -->
+                <!-- Decorative 3D globe for the landing section -->
                 <div class="hero-globe-stage" aria-hidden="true">
                     <div class="hero-globe-frame">
                         <div id="heroGlobeContainer"></div>
@@ -85,7 +85,7 @@
 
         <div class="home-divider" aria-hidden="true"></div>
 
-        <!-- Interactive map area for country selection -->
+        <!-- Interactive map for choosing a country -->
         <section class="map-area">
             <div class="map-header">
                 <h3>Choose a Country from the Map</h3>
@@ -100,14 +100,14 @@
         </section>
     </main>
 
-    <!-- Leaflet powers the interactive map on the home page -->
+    <!-- Leaflet library for the home page map -->
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
-    <!-- Home page behavior and map marker interactions -->
+    <!-- Home page behavior -->
     <script type="module" src="js/home.js"></script>
     
     <footer class="footer">
