@@ -1,7 +1,7 @@
-/* Google Fonts Import */
+/* Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,200..900&family=Source+Sans+3:wght@200..900&display=swap');
 
-/* Core color palette used across the application */
+/* Shared colors */
 :root {
     --green: #4d8b60;
     --green-deep: #2f6943;
@@ -35,14 +35,14 @@
     --line-heading: 1.15;
 }
 
-/* Resets default browser styling and applies border-box sizing to all elements */
+/* Base reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box; 
 }
 
-/* Sets the foundation for typography and page background */
+/* Page base */
 body {
     font-family: 'Source Sans 3', sans-serif;
     background:
@@ -57,7 +57,7 @@ body {
     flex-direction: column;
 }
 
-/* Keep page content above the texture layer */
+/* Content layer */
 body > * {
     position: relative;
     z-index: 1;
@@ -68,7 +68,7 @@ main {
     flex: 1 0 auto;
 }
 
-/* Soft page texture that sits behind the main content */
+/* Background texture */
 body:not(#countryBody)::before {
     content: "";
     position: fixed;
@@ -105,7 +105,7 @@ body:not(#countryBody)::after {
     transition: opacity 0.25s ease;
 }
 
-/* Applies the specific serif font and primary color to all headings */
+/* Shared headings */
 h1, h2, h3 {
     font-family: 'Literata', serif;
     color: var(--green);
@@ -113,7 +113,7 @@ h1, h2, h3 {
     font-weight: 800;
 }
 
-/* Flexbox container for the main header */
+/* Main header */
 .menu {
     padding: 18px 24px;
     display: grid;
@@ -160,7 +160,7 @@ h1, h2, h3 {
     flex-shrink: 0;
 }
 
-/* Logo text styling inside the menu */
+/* Logo text */
 .menu h1 {
     color: var(--cream);
     letter-spacing: -0.02em;
@@ -168,13 +168,12 @@ h1, h2, h3 {
     text-shadow: 0 2px 14px rgba(19, 35, 26, 0.16);
 }
 
-/* Removes default underline from all links in the menu */
+/* Header links */
 .menu a {
     text-decoration: none;
 }
 
-/* Buttons */
-/* Default solid primary button style */
+/* Primary button */
 .button {
     background-color: var(--green);
     color: var(--cream);
@@ -194,15 +193,14 @@ h1, h2, h3 {
     box-shadow: 0 14px 24px rgba(53, 91, 65, 0.18);
 }
 
-/* Visual state for buttons when they are disabled (e.g., during loading) */
+/* Disabled button */
 .button:disabled {
-    background-color: #a9bcae; /* Light green */
+    background-color: #a9bcae;
     cursor: not-allowed;
     box-shadow: none;
 }
 
-/* Inputs */
-/* Default styling for text input fields */
+/* Text inputs */
 input {
     background-color: rgba(255, 252, 247, 0.94);
     border: 1px solid rgba(129, 105, 74, 0.28);
@@ -221,17 +219,17 @@ input:focus {
         inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
-/* Container for the page links in the header menu */
+/* Header navigation */
 .menu-links {
     display: flex;
-    gap: 14px; /* Horizontal spacing between each link */
+    gap: 14px;
     align-items: center;
     justify-self: center;
     flex-wrap: wrap;
     justify-content: center;
 }
 
-/* Styling for the individual page links */
+/* Nav link */
 .menu-links a {
     color: rgba(250, 246, 240, 0.94);
     font-size: 1.06rem;
@@ -241,7 +239,7 @@ input:focus {
     transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-/* Adds soft highlight when hovering over menu links */
+/* Nav hover */
 .menu-links a:hover {
     color: var(--white);
     background: rgba(250, 246, 240, 0.15);
@@ -256,17 +254,17 @@ input:focus {
         0 10px 20px rgba(22, 40, 29, 0.1);
 }
 
-/* Container for the right-side buttons (Search, Sign Up) */
+/* Header actions */
 .menu-actions {
     display: flex;
-    gap: 12px; /* Horizontal spacing between buttons */
+    gap: 12px;
     align-items: center;
     justify-self: end;
     flex-wrap: wrap;
     justify-content: flex-end;
 }
 
-/* Secondary button style */
+/* Secondary button */
 .button-light {
     background-color: rgba(250, 246, 240, 0.96);
     color: var(--green);
@@ -305,7 +303,7 @@ input:focus {
     color: var(--white);
 }
 
-/* Transparent button style */
+/* Ghost button */
 .button-text {
     background-color: transparent;
     color: var(--cream);
@@ -318,7 +316,7 @@ input:focus {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* Slightly scales up the element when hovered */
+/* Shared hover lift */
 .button-text:hover {
     transform: translateY(-1px);
     opacity: 0.9;
@@ -350,15 +348,14 @@ input:focus {
     }
 }
 
-/* Rules applied only to screens 768px wide or smaller (Tablets and Phones) */
+/* Mobile header */
 @media (max-width: 768px) {
     .menu {
-        flex-direction: column; /* Stacks the logo, links, and buttons vertically */
         display: flex;
+        flex-direction: column;
         gap: 20px;
         text-align: center;
     }
-    /* Allows links and buttons to wrap to the next line if they don't fit horizontally */
     .menu-links, .menu-actions {
         flex-wrap: wrap;
         justify-content: center;
@@ -380,7 +377,7 @@ input:focus {
     }
 }
 
-/* Styling for the standalone, rounded footer box at the bottom of the page */
+/* Shared footer */
 .footer {
     background:
         linear-gradient(135deg, #26543a 0%, var(--green-deep) 28%, var(--green) 72%, #5f9472 100%);

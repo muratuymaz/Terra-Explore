@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
 
 const MAX_RECENT_COUNTRIES = 6;
 
-/* Reads one saved list from localStorage and safely falls back to an empty array */
+/* Reads one saved list from localStorage */
 function readList(storageKey) {
     try {
         const storedValue = localStorage.getItem(storageKey);
@@ -23,27 +23,27 @@ function readList(storageKey) {
             return parsedValue;
         }
     } catch {
-        /* Ignore storage errors so the app can keep working. */
+        /* Ignore storage errors. */
     }
 
     return [];
 }
 
-/* Saves one list back to localStorage without breaking the UI on storage errors */
+/* Saves one list back to localStorage */
 function writeList(storageKey, value) {
     try {
         localStorage.setItem(storageKey, JSON.stringify(value));
     } catch {
-        /* Ignore storage errors so the app can keep working. */
+        /* Ignore storage errors. */
     }
 }
 
-/* Normalizes text values so country and place comparisons stay consistent */
+/* Normalizes text for consistent comparisons */
 function normalizeKey(value) {
     return String(value || "").trim().toLowerCase();
 }
 
-/* Builds one stable key for a place using its name, city, and country */
+/* Builds one stable key for a place */
 function buildPlaceKey(place, countryName) {
     const placeName = normalizeKey(place.name);
     const cityName = normalizeKey(place.sourceCity);
@@ -52,7 +52,7 @@ function buildPlaceKey(place, countryName) {
     return [placeName, cityName, normalizedCountryName].filter(Boolean).join("|");
 }
 
-/* Keeps the recent country list fresh and limited to the latest few entries */
+/* Saves a recent country */
 export function saveRecentCountry(countryName) {
     const trimmedCountryName = String(countryName || "").trim();
 
@@ -67,12 +67,12 @@ export function saveRecentCountry(countryName) {
     writeList(STORAGE_KEYS.recentCountries, recentCountries.slice(0, MAX_RECENT_COUNTRIES));
 }
 
-/* Returns the countries shown in the recent searches area */
+/* Returns the recent countries */
 export function getRecentCountries() {
     return readList(STORAGE_KEYS.recentCountries);
 }
 
-/* Adds or removes one country from the favorites list */
+/* Toggles one country in favorites */
 export function toggleFavoriteCountry(countryName) {
     const trimmedCountryName = String(countryName || "").trim();
 
@@ -95,7 +95,7 @@ export function toggleFavoriteCountry(countryName) {
     return true;
 }
 
-/* Checks whether the selected country is already favorited */
+/* Checks whether a country is favorited */
 export function isFavoriteCountry(countryName) {
     const countryKey = normalizeKey(countryName);
 
@@ -103,12 +103,12 @@ export function isFavoriteCountry(countryName) {
         .some((country) => normalizeKey(country) === countryKey);
 }
 
-/* Returns all saved favorite countries for the profile page */
+/* Returns all favorite countries */
 export function getFavoriteCountries() {
     return readList(STORAGE_KEYS.favoriteCountries);
 }
 
-/* Adds or removes one popular place from the saved favorite places list */
+/* Toggles one place in favorites */
 export function toggleFavoritePlace(place, countryName) {
     const favoritePlaces = readList(STORAGE_KEYS.favoritePlaces);
     const placeKey = buildPlaceKey(place, countryName);
@@ -131,19 +131,19 @@ export function toggleFavoritePlace(place, countryName) {
     return true;
 }
 
-/* Checks whether one popular place is already saved as a favorite */
+/* Checks whether a place is favorited */
 export function isFavoritePlace(place, countryName) {
     const placeKey = buildPlaceKey(place, countryName);
 
     return readList(STORAGE_KEYS.favoritePlaces).some((savedPlace) => savedPlace.key === placeKey);
 }
 
-/* Returns the saved favorite places for the profile page */
+/* Returns all favorite places */
 export function getFavoritePlaces() {
     return readList(STORAGE_KEYS.favoritePlaces);
 }
 
-/* Stores whether a country is marked as visited or as a future destination */
+/* Stores the travel status for one country */
 export function setCountryTravelStatus(countryName, status) {
     const trimmedCountryName = String(countryName || "").trim();
 
@@ -168,7 +168,7 @@ export function setCountryTravelStatus(countryName, status) {
     writeList(STORAGE_KEYS.wantToVisitCountries, wantToVisitCountries);
 }
 
-/* Returns the current travel status for one country */
+/* Returns the saved travel status */
 export function getCountryTravelStatus(countryName) {
     const countryKey = normalizeKey(countryName);
     const isVisited = readList(STORAGE_KEYS.visitedCountries)
@@ -188,12 +188,12 @@ export function getCountryTravelStatus(countryName) {
     return "";
 }
 
-/* Returns all countries marked as visited */
+/* Returns the visited countries */
 export function getVisitedCountries() {
     return readList(STORAGE_KEYS.visitedCountries);
 }
 
-/* Returns all countries marked for future travel */
+/* Returns the wishlist countries */
 export function getWantToVisitCountries() {
     return readList(STORAGE_KEYS.wantToVisitCountries);
 }

@@ -1,7 +1,7 @@
 const REGISTERED_USER_STORAGE_KEY = "terraExploreRegisteredUser";
 const SESSION_USER_STORAGE_KEY = "terraExploreSessionUser";
 
-/* Reads the saved account from browser storage */
+/* Reads the saved account */
 export function getRegisteredUser() {
     try {
         const storedUser = localStorage.getItem(REGISTERED_USER_STORAGE_KEY);
@@ -22,7 +22,7 @@ export function getRegisteredUser() {
     return null;
 }
 
-/* Reads the current session user from browser storage */
+/* Reads the current session user */
 export function getCurrentUser() {
     try {
         const storedUser = sessionStorage.getItem(SESSION_USER_STORAGE_KEY);
@@ -37,34 +37,34 @@ export function getCurrentUser() {
     }
 }
 
-/* Saves the registered account in local storage */
+/* Saves the registered account */
 export function saveRegisteredUser(user) {
     try {
         localStorage.setItem(REGISTERED_USER_STORAGE_KEY, JSON.stringify(user));
     } catch {
-        /* Ignore storage errors so the app can keep working. */
+        /* Ignore storage errors. */
     }
 }
 
-/* Saves the current session user so the profile flow can stay visible across pages */
+/* Saves the current session user */
 export function saveCurrentUser(user) {
     try {
         sessionStorage.setItem(SESSION_USER_STORAGE_KEY, JSON.stringify(user));
     } catch {
-        /* Ignore storage errors so the app can keep working. */
+        /* Ignore storage errors. */
     }
 }
 
-/* Clears the current session during logout */
+/* Clears the current session */
 export function clearCurrentUser() {
     try {
         sessionStorage.removeItem(SESSION_USER_STORAGE_KEY);
     } catch {
-        /* Ignore storage errors so the app can keep working. */
+        /* Ignore storage errors. */
     }
 }
 
-/* Swaps the default header action with profile and logout controls */
+/* Swaps the default header actions after login */
 export function initHeaderAuth() {
     const menuActions = document.querySelector("[data-auth-menu]");
     const currentUser = getCurrentUser();

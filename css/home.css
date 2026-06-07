@@ -1,4 +1,4 @@
-/* Wraps the entire content of the home page, limits its width, and centers it */
+/* Home page layout */
 .home-page {
     max-width: 1000px;
     margin: 50px auto;
@@ -6,7 +6,7 @@
     padding: 0 18px 6px;
 }
 
-/* Search */
+/* Hero section */
 .search-area {
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -61,10 +61,10 @@
     margin-bottom: 10px;
 }
 
-/* Styling for the main heading above the search bar */
+/* Hero title */
 .search-area h2 {
     font-size: var(--text-hero);
-    margin-bottom: 12px; /* Adds space between the heading and the descriptive paragraph */
+    margin-bottom: 12px;
     max-width: 12ch;
     line-height: 1.05;
     letter-spacing: -0.02em;
@@ -138,7 +138,7 @@
     color: rgba(129, 105, 74, 0.82);
 }
 
-/* Flexbox container for the search input and button to align them perfectly side-by-side */
+/* Search form row */
 .search-box {
     display: flex;
     justify-content: flex-start;
@@ -267,7 +267,7 @@
     font-size: var(--text-small);
 }
 
-/* Map */
+/* Map section */
 .map-area {
     margin-top: 42px;
     padding: 28px;
@@ -437,9 +437,8 @@
     }
 }
 
-/* Responsive Design (Mobile & Tablets) */
+/* Responsive tweaks */
 @media (max-width: 768px) {
-    /* Reduce the main heading size for smaller screens to prevent awkward text wrapping */
     .search-area h2 {
         font-size: 1.95rem;
         max-width: 14ch;
@@ -460,20 +459,17 @@
         margin-bottom: 4px;
     }
 
-    /* Stack the search input and button vertically (top-to-bottom) instead of side-by-side */
     .search-box {
         flex-direction: column;
         align-items: stretch;
     }
 
-    /* Make both the input field and the button span the full width of their container for easier touch interaction */
     .search-input-group,
     .search-box input, 
     .search-box button {
         width: 100%;
     }
 
-    /* Reduce the inner padding of the map area to save precious screen space on mobile devices */
     .map-area {
         padding: 20px;
     }

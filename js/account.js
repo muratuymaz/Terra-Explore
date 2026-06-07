@@ -24,7 +24,7 @@ const profileElements = {
     wantToVisitCountries: document.querySelector("#wantToVisitCountriesList")
 };
 
-/* Validates the demo form, stores the user, and redirects to the profile page */
+/* Handles the sign up flow */
 function handleSignupSubmit(event) {
     event.preventDefault();
 
@@ -57,7 +57,7 @@ function handleSignupSubmit(event) {
     }, 900);
 }
 
-/* Fills the profile page with saved user data */
+/* Fills the profile page with saved data */
 function fillProfile() {
     const savedUser = getCurrentUser();
     let name = "";
@@ -94,7 +94,7 @@ function fillProfile() {
     }
 }
 
-/* Renders one group of saved country links inside the profile page */
+/* Renders one saved country group */
 function renderCountryTags(container, countries, emptyText) {
     if (!container) {
         return;
@@ -117,7 +117,7 @@ function renderCountryTags(container, countries, emptyText) {
     });
 }
 
-/* Shows the saved favorite places list on the profile page */
+/* Renders the saved favorite places */
 function renderFavoritePlaces() {
     if (!profileElements.favoritePlaces) {
         return;
@@ -144,7 +144,7 @@ function renderFavoritePlaces() {
     });
 }
 
-/* Fills all saved travel sections after the profile page loads */
+/* Fills the saved travel sections */
 function fillTravelLists() {
     renderCountryTags(profileElements.favoriteCountries, getFavoriteCountries(), "No favorite countries yet.");
     renderCountryTags(profileElements.visitedCountries, getVisitedCountries(), "No visited countries yet.");

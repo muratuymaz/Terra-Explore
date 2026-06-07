@@ -49,7 +49,7 @@ let countryMap = null;
 let baseMapLayer = null;
 let placesMapLayer = null;
 
-/* Defines the world bounds used to keep the country map in range */
+/* Keeps the country map inside the world bounds */
 function getCountryMapBounds() {
     const southWest = window.L.latLng(-85, -180);
     const northEast = window.L.latLng(85, 180);
@@ -57,7 +57,7 @@ function getCountryMapBounds() {
     return window.L.latLngBounds(southWest, northEast);
 }
 
-/* Formats OpenTripMap kinds into a cleaner card label */
+/* Turns OpenTripMap kinds into a cleaner label */
 function getPlaceCategory(kindsText = "") {
     let category = kindsText
         .split(",")
@@ -70,7 +70,7 @@ function getPlaceCategory(kindsText = "") {
     return toTitleCase(category.replace(/_/g, " "));
 }
 
-/* Shows helper text for loading, errors, or empty results under the action button */
+/* Updates the message under the places button */
 function setPopularPlacesFeedback(message = "") {
     if (!elements.popularPlacesFeedback) {
         return;
@@ -80,7 +80,7 @@ function setPopularPlacesFeedback(message = "") {
     elements.popularPlacesFeedback.hidden = !message;
 }
 
-/* Syncs the three country action buttons with the saved user state */
+/* Syncs the country action buttons */
 function updateCountryActionButtons() {
     if (!selectedCountry) {
         return;
@@ -107,7 +107,7 @@ function updateCountryActionButtons() {
     }
 }
 
-/* Starts the Leaflet map used inside the country page */
+/* Starts the country map */
 function ensureCountryMap() {
     if (countryMap || !elements.countryMap || !window.L) {
         return;
@@ -132,7 +132,7 @@ function ensureCountryMap() {
     placesMapLayer = window.L.layerGroup().addTo(countryMap);
 }
 
-/* Centers the map on the country or its capital when coordinates exist */
+/* Centers the map on the country or its capital */
 function renderCountryMap(country) {
     ensureCountryMap();
 
@@ -183,7 +183,7 @@ function renderCountryMap(country) {
     }
 }
 
-/* Adds small markers for the loaded popular places on the country map */
+/* Adds the loaded place markers to the map */
 function renderPopularPlaceMarkers(places) {
     ensureCountryMap();
 
@@ -233,7 +233,7 @@ function renderPopularPlaceMarkers(places) {
     }
 }
 
-/* Renders the popular places list as simple cards */
+/* Renders the popular place cards */
 function renderPopularPlaces(places) {
     if (!elements.popularPlacesGrid) {
         return;
@@ -310,7 +310,7 @@ function renderPopularPlaces(places) {
     });
 }
 
-/* Keeps the button state and label in sync during requests */
+/* Updates the places button during requests */
 function setPopularPlacesLoadingState(isLoading) {
     isPopularPlacesLoading = isLoading;
 
@@ -326,7 +326,7 @@ function setPopularPlacesLoadingState(isLoading) {
     }
 }
 
-/* Renders the basic country details on the page */
+/* Renders the country details */
 function renderCountryDetails(country) {
     document.title = "Terra Explore | " + country.name;
     selectedCountry = country;
@@ -348,7 +348,7 @@ function renderCountryDetails(country) {
     updateCountryActionButtons();
 }
 
-/* Applies the fetched background image if one is available */
+/* Applies the background image when it exists */
 function applyBackgroundImage(backgroundImage) {
     if (!backgroundImage || !backgroundImage.imageUrl || !elements.pageBody) {
         return;
@@ -358,7 +358,7 @@ function applyBackgroundImage(backgroundImage) {
     elements.pageBody.setAttribute("aria-label", backgroundImage.altText || "Country background image");
 }
 
-/* Replaces the main content with a simple error message */
+/* Replaces the page with a simple error state */
 function showPageError(message) {
     if (!elements.countryName || !elements.popularPlacesGrid) {
         return;
@@ -386,7 +386,7 @@ function showPageError(message) {
     }
 }
 
-/* Loads and renders the country's popular places on demand */
+/* Loads the country's popular places on demand */
 async function handlePopularPlacesRequest() {
     if (!selectedCountry || isPopularPlacesLoading) {
         return;
@@ -431,14 +431,14 @@ async function handlePopularPlacesRequest() {
     }
 }
 
-/* Connects the country action button to the popular places flow */
+/* Connects the popular places button */
 function bindPopularPlacesButton() {
     if (elements.popularPlacesButton) {
         elements.popularPlacesButton.addEventListener("click", handlePopularPlacesRequest);
     }
 }
 
-/* Connects the favorite and travel status buttons to saved profile data */
+/* Connects the saved-action buttons */
 function bindCountryActionButtons() {
     if (elements.favoriteCountryButton) {
         elements.favoriteCountryButton.addEventListener("click", () => {
@@ -488,7 +488,7 @@ function bindCountryActionButtons() {
     }
 }
 
-/* Loads the selected country and then applies the optional background image */
+/* Loads the selected country and its optional background */
 async function loadCountryPage() {
     const countryName = getQueryParam("name");
 
@@ -516,7 +516,7 @@ async function loadCountryPage() {
         const backgroundImage = await fetchCountryBackgroundImage(selectedCountry);
         applyBackgroundImage(backgroundImage);
     } catch {
-        /* Background images are optional, so the page should stay usable without one. */
+        /* Background images are optional. */
     }
 }
 
@@ -525,7 +525,7 @@ bindCountryActionButtons();
 bindPopularPlacesButton();
 loadCountryPage();
 
-/* Keeps the country map sized correctly if the window changes */
+/* Keeps the country map sized correctly */
 window.addEventListener("resize", () => {
     if (countryMap) {
         countryMap.invalidateSize({ pan: false });

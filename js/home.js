@@ -33,7 +33,7 @@ const markerPalette = [
     { start: "#5aa7a1", end: "#357c78", ring: "rgba(79, 154, 147, 0.24)" }
 ];
 
-/* Cleans extra spaces before the value is used in the URL */
+/* Cleans the country name before building the URL */
 function normalizeCountryName(value) {
     return value
         .trim()
@@ -42,17 +42,17 @@ function normalizeCountryName(value) {
         .join(" ");
 }
 
-/* Normalizes the value for country-name lookups without changing the visible text */
+/* Matches typed values against the saved country list */
 function normalizeCountryLookup(value) {
     return normalizeCountryName(value).toLowerCase();
 }
 
-/* Builds the detail page URL with the selected country name */
+/* Builds the country page URL */
 function buildCountryPageUrl(countryName) {
     return COUNTRY_PAGE_PATH + "?name=" + encodeURIComponent(countryName);
 }
 
-/* Keeps the small validation message under the search area in sync */
+/* Updates the small search message */
 function setError(message = "") {
     if (!elements.errorMessage) {
         return;
@@ -62,7 +62,7 @@ function setError(message = "") {
     elements.errorMessage.hidden = !message;
 }
 
-/* Finds the saved country name that matches the current input */
+/* Finds the matching country name */
 function findCountryMatch(countryName) {
     const normalizedCountryName = normalizeCountryLookup(countryName);
 
@@ -79,7 +79,7 @@ function findCountryMatch(countryName) {
     return matchedCountry;
 }
 
-/* Enables the search button only when the input matches a real country */
+/* Enables search only for real country names */
 function updateSearchButtonState() {
     if (!elements.searchButton) {
         return;
@@ -94,7 +94,7 @@ function updateSearchButtonState() {
     elements.searchButton.disabled = !Boolean(findCountryMatch(inputValue));
 }
 
-/* Creates the decorative 3D globe in the landing area without affecting the real map below */
+/* Loads the hero globe */
 function loadHeroGlobe() {
     if (!elements.heroGlobeContainer || !window.Globe || heroGlobe) {
         return;
@@ -136,7 +136,7 @@ function loadHeroGlobe() {
     controls.maxDistance = 260;
 }
 
-/* Resizes the hero globe when the browser width changes */
+/* Resizes the hero globe */
 function resizeHeroGlobe() {
     if (!heroGlobe || !elements.heroGlobeContainer) {
         return;
@@ -153,7 +153,7 @@ function resizeHeroGlobe() {
     heroGlobe.height(containerHeight);
 }
 
-/* Renders the recent search chips shown on the home page */
+/* Renders the recent search chips */
 function renderRecentSearches() {
     if (!elements.recentSearches) {
         return;
@@ -177,7 +177,7 @@ function renderRecentSearches() {
     });
 }
 
-/* Hides the autocomplete list and resets its temporary state */
+/* Closes the suggestion list */
 function hideSuggestions() {
     visibleSuggestions = [];
     activeSuggestionIndex = -1;
@@ -191,7 +191,7 @@ function hideSuggestions() {
     elements.searchInput.setAttribute("aria-expanded", "false");
 }
 
-/* Draws the currently visible autocomplete suggestions under the input */
+/* Draws the visible suggestions */
 function renderSuggestions() {
     if (!elements.searchSuggestions || !elements.searchInput) {
         return;
@@ -226,7 +226,7 @@ function renderSuggestions() {
     elements.searchInput.setAttribute("aria-expanded", "true");
 }
 
-/* Applies one suggestion back into the input field */
+/* Fills the input with one suggestion */
 function selectSuggestion(countryName) {
     if (!elements.searchInput) {
         return;
@@ -238,7 +238,7 @@ function selectSuggestion(countryName) {
     updateSearchButtonState();
 }
 
-/* Rebuilds the suggestion list from the current input text */
+/* Rebuilds the suggestion list */
 function showSuggestions() {
     let inputValue = "";
 
@@ -272,7 +272,7 @@ function showSuggestions() {
     renderSuggestions();
 }
 
-/* Sends the user to the country page if the input is usable */
+/* Opens the country page when the input is valid */
 function redirectToCountry(countryName) {
     const normalizedCountryName = normalizeCountryName(countryName);
     const matchedCountryName = findCountryMatch(normalizedCountryName);
@@ -298,7 +298,7 @@ function redirectToCountry(countryName) {
     window.location.href = buildCountryPageUrl(matchedCountryName);
 }
 
-/* Reads the current input value and starts the search flow */
+/* Starts the search from the current input */
 function handleSearch() {
     let countryName = "";
 
@@ -309,13 +309,13 @@ function handleSearch() {
     redirectToCountry(countryName);
 }
 
-/* Starts the Leaflet world map only once */
+/* Starts the world map once */
 function ensureWorldMap() {
     if (worldMap || !elements.worldMapContainer || !window.L) {
         return;
     }
 
-    // Keep the map inside the visible world area.
+    // Keep the map inside the visible world.
     const southWest = window.L.latLng(-85, -180);
     const northEast = window.L.latLng(85, 180);
     const bounds = window.L.latLngBounds(southWest, northEast);
@@ -336,14 +336,14 @@ function ensureWorldMap() {
     worldMarkersLayer = window.L.layerGroup().addTo(worldMap);
 }
 
-/* Picks one marker color family from the shared palette */
+/* Picks one marker color */
 function getMarkerPalette(countryName) {
     const paletteIndex = [...countryName].reduce((total, char) => total + char.charCodeAt(0), 0) % markerPalette.length;
 
     return markerPalette[paletteIndex];
 }
 
-/* Builds the custom country marker with its flag and color shell */
+/* Builds the custom country marker */
 function createCountryMarkerIcon(countryName, flagUrl) {
     const { start, end, ring } = getMarkerPalette(countryName);
     const hasFlag = Boolean(flagUrl);
@@ -369,7 +369,7 @@ function createCountryMarkerIcon(countryName, flagUrl) {
     });
 }
 
-/* Places all clickable country markers on the world map */
+/* Places the country markers on the map */
 function renderCountryMarkers(countries) {
     ensureWorldMap();
 
@@ -406,7 +406,7 @@ function renderCountryMarkers(countries) {
     }
 }
 
-/* Connects the search input and button to the same redirect logic */
+/* Connects the search controls */
 function bindSearchControls() {
     if (elements.searchButton) {
         elements.searchButton.addEventListener("click", handleSearch);
@@ -472,7 +472,7 @@ function bindSearchControls() {
     });
 }
 
-/* Loads the country data used by both the map and the autocomplete list */
+/* Loads the country list for the map and search */
 async function loadWorldMap() {
     if (!elements.worldMapContainer) {
         return;
@@ -509,5 +509,5 @@ bindSearchControls();
 loadHeroGlobe();
 loadWorldMap();
 
-/* Keeps the decorative globe responsive after the page finishes loading */
+/* Keeps the hero globe responsive */
 window.addEventListener("resize", resizeHeroGlobe);

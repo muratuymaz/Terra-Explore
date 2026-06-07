@@ -1,4 +1,4 @@
-/* Reads and trims a query parameter from the current page URL */
+/* Reads one query value from the current URL */
 export function getQueryParam(paramName) {
     const queryString = window.location.search.replace("?", "");
 
@@ -19,12 +19,12 @@ export function getQueryParam(paramName) {
     return "";
 }
 
-/* Formats numeric values for the UI */
+/* Formats numbers for the UI */
 export function formatNumber(value) {
     return new Intl.NumberFormat("en-US").format(value);
 }
 
-/* Joins list values into a readable string */
+/* Joins a list into readable text */
 export function formatList(values, fallbackText = "Unknown") {
     if (!values.length) {
         return fallbackText;
@@ -33,7 +33,7 @@ export function formatList(values, fallbackText = "Unknown") {
     return values.join(", ");
 }
 
-/* Formats currency objects returned by the API */
+/* Formats the currency list */
 export function formatCurrencies(currencies) {
     if (!currencies.length) {
         return "Unknown";
@@ -57,7 +57,7 @@ export function formatCurrencies(currencies) {
         .join(", ");
 }
 
-/* Converts plain text labels into title case */
+/* Converts text into title case */
 export function toTitleCase(value) {
     return value
         .split(" ")
@@ -65,7 +65,7 @@ export function toTitleCase(value) {
         .join(" ");
 }
 
-/* Normalizes text so small spelling and accent differences compare more reliably */
+/* Normalizes text for safer comparisons */
 export function normalizeText(value) {
     let normalizedValue = String(value || "").trim().toLowerCase().replaceAll("_", " ");
     const specialCharacters = "çğıöşüáàâéèêíìîóòôúùû";
@@ -104,7 +104,7 @@ export function normalizeText(value) {
         .join(" ");
 }
 
-/* Removes generic tokens from a normalized label and falls back to the full normalized text */
+/* Removes generic tokens from a place name */
 export function cleanPlaceName(value, ignoredTokens = []) {
     const normalizedValue = normalizeText(value);
     const meaningfulTokens = normalizedValue
@@ -114,7 +114,7 @@ export function cleanPlaceName(value, ignoredTokens = []) {
     return meaningfulTokens.join(" ") || normalizedValue;
 }
 
-/* Checks whether a value is effectively a duplicate of an existing normalized value */
+/* Checks whether two names are basically the same */
 export function isSimilarName(existingValues, candidateValue) {
     return existingValues.some((existingValue) => (
         existingValue === candidateValue
@@ -123,12 +123,12 @@ export function isSimilarName(existingValues, candidateValue) {
     ));
 }
 
-/* Builds a stable cache entry key from a user-facing name */
+/* Builds a cache key from a display name */
 export function makeCacheKey(value) {
     return value.trim().toLowerCase();
 }
 
-/* Reads a JSON object from localStorage */
+/* Reads one object from localStorage */
 export function readStorageObject(storageKey) {
     try {
         const storedValue = localStorage.getItem(storageKey);
@@ -143,16 +143,16 @@ export function readStorageObject(storageKey) {
     }
 }
 
-/* Saves a JSON object to localStorage */
+/* Saves one object to localStorage */
 export function writeStorageObject(storageKey, value) {
     try {
         localStorage.setItem(storageKey, JSON.stringify(value));
     } catch {
-        /* Ignore storage errors so the app can continue normally */
+        /* Ignore storage errors. */
     }
 }
 
-/* Returns a fresh cached value when it has not expired yet */
+/* Returns a cached value while it is still fresh */
 export function getCacheValue(cacheConfig, entryKey) {
     const cache = readStorageObject(cacheConfig.key);
     const cachedItem = cache[entryKey];
@@ -172,7 +172,7 @@ export function getCacheValue(cacheConfig, entryKey) {
     return cachedItem.data;
 }
 
-/* Stores a cache entry using the shared savedAt structure */
+/* Stores one cache entry */
 export function setCacheValue(cacheConfig, entryKey, data) {
     const cache = readStorageObject(cacheConfig.key);
 
@@ -184,7 +184,7 @@ export function setCacheValue(cacheConfig, entryKey, data) {
     writeStorageObject(cacheConfig.key, cache);
 }
 
-/* Loads JSONP data for endpoints that do not allow cross-origin fetch requests */
+/* Loads JSONP data for endpoints without normal fetch support */
 export function fetchJsonp(url, callbackParam = "callback", callbackName = "") {
     return new Promise((resolve, reject) => {
         const script = document.createElement("script");
