@@ -1,18 +1,23 @@
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export const API_BASE_URLS = {
-    restCountries: "https://restcountries.com/v3.1",
+    restCountries: "https://api.restcountries.com/countries/v5",
     pixabay: "https://pixabay.com/api/",
     openTripMap: "https://api.opentripmap.com/0.1/en/places"
 };
 
 export const API_KEYS = {
+    restCountries: "YOUR_REST_COUNTRIES_API_KEY",
     pixabay: "YOUR_PIXABAY_API_KEY",
     geoNamesUsername: "YOUR_GEONAMES_USERNAME",
     openTripMap: "YOUR_OPENTRIPMAP_API_KEY"
 };
 
 export const CACHE_CONFIG = {
+    restCountries: {
+        key: "terraExploreRestCountriesCacheV1",
+        maxAge: DAY_IN_MS
+    },
     pixabay: {
         key: "terraExplorePixabayCache",
         maxAge: DAY_IN_MS

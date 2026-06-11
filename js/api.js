@@ -13,12 +13,19 @@ import {
     GEONAMES_CONFIG,
     POPULAR_PLACES_CONFIG
 } from "./config.js";
-const { pixabay: pixabayCache, geoNames: geoNamesCache } = CACHE_CONFIG;
 const {
+    restCountries: restCountriesCache,
+    pixabay: pixabayCache,
+    geoNames: geoNamesCache
+} = CACHE_CONFIG;
+const {
+    restCountries: restCountriesApiKey,
     pixabay: pixabayApiKey,
     geoNamesUsername,
     openTripMap: openTripMapApiKey
 } = API_KEYS;
+const REST_COUNTRIES_PAGE_LIMIT = 100;
+const REST_COUNTRIES_LIST_CACHE_KEY = "all-countries";
 const {
     endpoint: geoNamesEndpoint,
     callbackParam: geoNamesCallbackParam,
@@ -44,6 +51,35 @@ async function fetchJson(url, options = {}) {
     }
 
     return response.json();
+}
+
+/* Builds one REST Countries v5 URL with the required API key */
+function buildRestCountriesUrl(path = "", params = {}) {
+    const url = new URL(API_BASE_URLS.restCountries + path);
+
+    if (restCountriesApiKey) {
+        url.searchParams.set("api-key", restCountriesApiKey);
+    }
+
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+            url.searchParams.set(key, String(value));
+        }
+    });
+
+    return url.toString();
+}
+
+/* Reads the data wrapper returned by REST Countries v5 */
+async function fetchRestCountriesObjects(path = "", params = {}) {
+    const response = await fetchJson(buildRestCountriesUrl(path, params));
+
+    if (response.errors && response.errors.length) {
+        const [error] = response.errors;
+        throw new Error(error.message || "Country details could not be loaded.");
+    }
+
+    return response.data || {};
 }
 
 /* Requests top city data from one GeoNames endpoint */
@@ -72,8 +108,8 @@ async function fetchGeoNamesCities(endpoint, queryString, callbackSuffix) {
         }));
 }
 
-/* Converts the REST Countries response into a simpler UI-friendly object */
-function mapCountryResponse(country) {
+/* Converts one REST Countries v5 country object into the shape used by the UI */
+function mapRestCountryToDetails(country) {
     let languages = [];
     let currencies = [];
     let name = "Unknown Country";
@@ -85,43 +121,46 @@ function mapCountryResponse(country) {
     let lng = Number.NaN;
     let capitalLat = Number.NaN;
     let capitalLng = Number.NaN;
+    const [primaryCapital] = Array.isArray(country.capitals) ? country.capitals : [];
 
-    if (country.languages) {
-        languages = Object.values(country.languages);
+    if (Array.isArray(country.languages)) {
+        languages = country.languages
+            .map((language) => language.name)
+            .filter(Boolean);
     }
 
-    if (country.currencies) {
-        currencies = Object.values(country.currencies);
+    if (Array.isArray(country.currencies)) {
+        currencies = country.currencies;
     }
 
-    if (country.name && country.name.common) {
-        name = country.name.common;
+    if (country.names && country.names.common) {
+        name = country.names.common;
     }
 
-    if (country.cca2) {
-        countryCode = country.cca2.toLowerCase();
+    if (country.codes && country.codes.alpha_2) {
+        countryCode = country.codes.alpha_2.toLowerCase();
     }
 
-    if (country.flags) {
-        flagUrl = country.flags.svg || country.flags.png || "";
+    if (country.flag) {
+        flagUrl = country.flag.url_svg || country.flag.url_png || "";
     }
 
-    if (Array.isArray(country.capital) && country.capital.length) {
-        capital = country.capital[0];
+    if (primaryCapital && primaryCapital.name) {
+        capital = primaryCapital.name;
     }
 
     if (typeof country.population === "number") {
         population = country.population;
     }
 
-    if (Array.isArray(country.latlng)) {
-        lat = Number(country.latlng[0]);
-        lng = Number(country.latlng[1]);
+    if (country.coordinates) {
+        lat = Number(country.coordinates.lat);
+        lng = Number(country.coordinates.lng);
     }
 
-    if (country.capitalInfo && Array.isArray(country.capitalInfo.latlng)) {
-        capitalLat = Number(country.capitalInfo.latlng[0]);
-        capitalLng = Number(country.capitalInfo.latlng[1]);
+    if (primaryCapital && primaryCapital.coordinates) {
+        capitalLat = Number(primaryCapital.coordinates.lat);
+        capitalLng = Number(primaryCapital.coordinates.lng);
     }
 
     return {
@@ -191,22 +230,30 @@ async function fetchPopularPlacesNearCity(city) {
     return fetchJson(API_BASE_URLS.openTripMap + "/radius?" + searchParams);
 }
 
-/* Fetches one country by name from REST Countries */
+/* Fetches one country by name from REST Countries v5 */
 export async function fetchCountryByName(countryName) {
     const encodedCountryName = encodeURIComponent(countryName);
-    const url = API_BASE_URLS.restCountries + "/name/" + encodedCountryName + "?fullText=true";
+    const cacheKey = makeCacheKey(countryName);
+    const cachedCountry = getCacheValue(restCountriesCache, cacheKey);
+
+    if (cachedCountry) {
+        return cachedCountry;
+    }
 
     try {
-        const results = await fetchJson(url);
-        const [country] = results;
+        const { objects = [] } = await fetchRestCountriesObjects("/names.common/" + encodedCountryName);
+        const [country] = objects;
 
         if (!country) {
             throw new Error("Country not found.");
         }
 
-        return mapCountryResponse(country);
+        const mappedCountry = mapRestCountryToDetails(country);
+
+        setCacheValue(restCountriesCache, cacheKey, mappedCountry);
+        return mappedCountry;
     } catch (error) {
-        if (error instanceof Error && error.message.includes("404")) {
+        if (error instanceof Error && (error.message.includes("404") || error.message.includes("not found"))) {
             throw new Error("Country not found.");
         }
 
@@ -214,45 +261,66 @@ export async function fetchCountryByName(countryName) {
     }
 }
 
-/* Loads the country list used by the home map and comparison inputs */
+/* Loads all paginated REST Countries v5 records for the home map and comparison inputs */
 export async function fetchCountriesForMap() {
-    const fields = "name,capital,capitalInfo,latlng,flags";
-    const countries = await fetchJson(API_BASE_URLS.restCountries + "/all?fields=" + fields);
+    const cachedCountries = getCacheValue(restCountriesCache, REST_COUNTRIES_LIST_CACHE_KEY);
 
-    return countries
-        .filter((country) => country.name && country.name.common)
+    if (cachedCountries) {
+        return cachedCountries;
+    }
+
+    const countries = [];
+    let offset = 0;
+    let hasMoreCountries = true;
+
+    while (hasMoreCountries) {
+        const { objects = [], meta = {} } = await fetchRestCountriesObjects("", {
+            limit: REST_COUNTRIES_PAGE_LIMIT,
+            offset
+        });
+
+        countries.push(...objects);
+        hasMoreCountries = Boolean(meta.more);
+        offset += REST_COUNTRIES_PAGE_LIMIT;
+    }
+
+    const mappedCountries = countries
+        .filter((country) => (
+            country.names
+            && country.names.common
+            && country.codes
+            && country.codes.alpha_2
+        ))
         .map((country) => {
-            let coordinates = [];
+            let coordinates = country.coordinates || {};
+            const [primaryCapital] = Array.isArray(country.capitals) ? country.capitals : [];
             let capital = "";
             let flagUrl = "";
 
-            if (Array.isArray(country.latlng)) {
-                coordinates = country.latlng;
+            if (primaryCapital && primaryCapital.coordinates) {
+                coordinates = primaryCapital.coordinates;
             }
 
-            if (country.capitalInfo && Array.isArray(country.capitalInfo.latlng) && country.capitalInfo.latlng.length >= 2) {
-                coordinates = country.capitalInfo.latlng;
+            if (primaryCapital && primaryCapital.name) {
+                capital = primaryCapital.name;
             }
 
-            if (Array.isArray(country.capital) && country.capital.length) {
-                capital = country.capital[0];
+            if (country.flag) {
+                flagUrl = country.flag.url_svg || country.flag.url_png || "";
             }
-
-            if (country.flags) {
-                flagUrl = country.flags.svg || country.flags.png || "";
-            }
-
-            const [capitalLat, capitalLng] = coordinates;
 
             return {
-                name: country.name.common,
+                name: country.names.common,
                 capital,
-                lat: Number(capitalLat),
-                lng: Number(capitalLng),
+                lat: Number(coordinates.lat),
+                lng: Number(coordinates.lng),
                 flagUrl
             };
         })
         .filter((country) => Number.isFinite(country.lat) && Number.isFinite(country.lng));
+
+    setCacheValue(restCountriesCache, REST_COUNTRIES_LIST_CACHE_KEY, mappedCountries);
+    return mappedCountries;
 }
 
 /* Fetches a country photo using a more specific travel-focused search */

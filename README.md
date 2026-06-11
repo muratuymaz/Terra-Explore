@@ -103,6 +103,7 @@ This project does not require a build step or Node.js.
 
 2. Add your own API credentials to `js/config.js`:
 
+   - `restCountries`
    - `pixabay`
    - `geoNamesUsername`
    - `openTripMap`
@@ -120,6 +121,8 @@ If your browser blocks some API behavior when opening the file directly, run the
 - 24-hour cache settings
 - GeoNames settings
 - Popular places settings
+
+For REST Countries v5, add your local origin to the API key's allowed origins in the REST Countries dashboard. For local development with Live Server, include `http://127.0.0.1:5500` or `http://localhost:5500`, depending on the URL you open in the browser.
 
 `js/config.js` is meant to stay local. The repository should only include `js/config.example.js`.
 
