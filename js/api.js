@@ -70,8 +70,8 @@ function buildRestCountriesUrl(path = "", params = {}) {
     return url.toString();
 }
 
-/* Reads the data wrapper returned by REST Countries v5 */
-async function fetchRestCountriesObjects(path = "", params = {}) {
+/* Reads the data block returned by REST Countries v5 */
+async function fetchRestCountriesData(path = "", params = {}) {
     const response = await fetchJson(buildRestCountriesUrl(path, params));
 
     if (response.errors && response.errors.length) {
@@ -241,7 +241,7 @@ export async function fetchCountryByName(countryName) {
     }
 
     try {
-        const { objects = [] } = await fetchRestCountriesObjects("/names.common/" + encodedCountryName);
+        const { objects = [] } = await fetchRestCountriesData("/names.common/" + encodedCountryName);
         const [country] = objects;
 
         if (!country) {
@@ -274,7 +274,7 @@ export async function fetchCountriesForMap() {
     let hasMoreCountries = true;
 
     while (hasMoreCountries) {
-        const { objects = [], meta = {} } = await fetchRestCountriesObjects("", {
+        const { objects = [], meta = {} } = await fetchRestCountriesData("", {
             limit: REST_COUNTRIES_PAGE_LIMIT,
             offset
         });
