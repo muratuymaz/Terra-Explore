@@ -75,14 +75,26 @@ Terra-Explore/
 ├── profile.html             # User profile page
 └── README.md                # Project documentation
 ```
+## Screenshots
+
+### Home Page
+![Home Page 1](docs/home-page-1.jpeg)
+
+![Home Page 2](docs/home-page-2.jpeg)
+
+### Country Details
+![Country Details](docs/country-details.jpeg)
+
+### Compare Countries
+![Compare Countries](docs/compare-countries.jpeg)
+
+### Profile Page
+![Profile Page](docs/profile-page.jpeg)
+
 
 ## Demo Video
 
-
-
 https://github.com/user-attachments/assets/e8639f34-504c-4b26-a0e9-927d1e4d2815
-
-
 
 ## Setup
 
