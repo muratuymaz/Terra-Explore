@@ -76,21 +76,13 @@ Terra-Explore/
 └── README.md                # Project documentation
 ```
 
-## Screenshots
+## Demo Video
 
-### Home Page
-![Home Page 1](docs/home-page-1.jpeg)
 
-![Home Page 2](docs/home-page-2.jpeg)
 
-### Country Details
-![Country Details](docs/country-details.jpeg)
+https://github.com/user-attachments/assets/e8639f34-504c-4b26-a0e9-927d1e4d2815
 
-### Compare Countries
-![Compare Countries](docs/compare-countries.jpeg)
 
-### Profile Page
-![Profile Page](docs/profile-page.jpeg)
 
 ## Setup
 
